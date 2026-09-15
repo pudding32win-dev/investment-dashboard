@@ -480,7 +480,7 @@ canvas.d-chart { width:100%; display:block; }
 .filter-bar label { font-size:11px; color:var(--muted); }
 .filter-clear { font-size:11px; padding:5px 10px; border-radius:6px; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.25); color:var(--red); cursor:pointer; }
 </style>
-</head>
+<meta name="dashboard-version" content="2026-09-15-NQ-EDIT-SIGNALFIX-V3"><!-- 黃K保留；只顯示今日有效訊號並防止重複通知 --></head>
 <body>
 
 <!-- ── 通知側欄 ── -->
@@ -4784,7 +4784,7 @@ function renderTrackingStatus(d) {
 function renderSignalToday(d) {
   var el = document.getElementById('signal-today');
   if (!el) return;
-  var signals = (d.signals || []).filter(shouldShowSignal);
+  var signals = (d.signals || []).filter(function(s){ return shouldShowSignal(s, d); });
   var today = fmtToday();
 
   var todaySignals = signals.filter(function(s) { return s.date === today || !s.date; });
@@ -4905,32 +4905,77 @@ function renderSignalHistory() {
 
 // ── 推播通知 ──
 var _notifiedSignals = new Set();
+try {
+  var _savedNotifyKeys = JSON.parse(localStorage.getItem('signalNotifiedKeys') || '[]');
+  if (Array.isArray(_savedNotifyKeys)) _savedNotifyKeys.forEach(function(k){ _notifiedSignals.add(k); });
+} catch(e) {}
+function persistNotifiedSignals() {
+  try {
+    localStorage.setItem('signalNotifiedKeys', JSON.stringify(Array.from(_notifiedSignals).slice(-200)));
+  } catch(e) {}
+}
+
+function normalizeSignalDate(v) {
+  if (!v) return '';
+  var s = String(v).trim();
+  var m = s.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+  return m ? m[1]+'/'+String(m[2]).padStart(2,'0')+'/'+String(m[3]).padStart(2,'0') : s;
+}
+
+// 取得該策略目前資料的「最新交易日」。舊訊號（例如 2026/09/04）不再當成今天訊號。
+function getLatestSignalDate(d, strategy) {
+  if (!d) return fmtToday();
+  var sym = strategy === 'G' ? '00631L' : '0050';
+  var kd = d.klineDate;
+  var v = kd && kd[sym];
+  if (!v) v = d.updatedAt;
+  var n = normalizeSignalDate(v);
+  return n || fmtToday();
+}
+
+function isLatestSignal(s, d) {
+  if (!s) return false;
+  // 即時訊號只允許「今天」的訊號；Firebase/Worker 若殘留舊日期（例如 2026/09/04），一律禁止彈窗、通知與今日訊號顯示。
+  if (!s.date) return false;
+  var signalDate = normalizeSignalDate(s.date);
+  var todayDate = normalizeSignalDate(fmtToday());
+  return signalDate === todayDate;
+}
+
 // 判斷某策略(G=灰K/00631L, Y=黃K/0050)目前是否有實際未平倉部位
 function hasOpenPosition(key) {
   return (DATA[key] || []).some(function(r) { return !r.ex; });
 }
 
-// 已持倉 → 只追蹤出場訊號（進場/觀察訊號不再顯示，因為已經進場了不需要）
-// 未持倉 → 只追蹤進場訊號（出場訊號不需要，因為根本沒有部位可以出場）
-function shouldShowSignal(s) {
-  if (!s) return true;
+// 已持倉 → 只追蹤出場；未持倉 → 只追蹤進場；舊日期訊號一律不再視為即時訊號
+function shouldShowSignal(s, d) {
+  if (!s) return false;
   var key = s.strategy;
-  if (key === 'Y') return false; // 預覽版完全停用黃K訊號，避免黃K提醒反覆出現
-  if (key !== 'G' && key !== 'Y') return true; // 無法判斷策略歸屬時，保守起見照常顯示
+  if (key !== 'G' && key !== 'Y') return false;
+  if (d && !isLatestSignal(s, d)) return false;
   var holding = hasOpenPosition(key);
-  if (s.type === 'EXIT') return holding;                      // 出場訊號：只有真的有持倉才顯示
-  if (s.type === 'ENTRY' || s.type === 'WATCH') return !holding; // 進場/觀察訊號：只有還沒持倉才顯示
-  return true; // 其他未知類型，照常顯示
+  if (s.type === 'EXIT') return holding;
+  if (s.type === 'ENTRY') return !holding;
+  return false;
 }
 
 function checkAndPushNotify(d) {
-  var signals = (d.signals || []).filter(shouldShowSignal);
+  var signals = (d.signals || []).filter(function(s){ return shouldShowSignal(s, d); });
+  if (!signals.length) return;
+  // 同一天、同一訊號只保留一筆，避免刷新時重複跳出
+  var seen = new Set();
+  signals = signals.filter(function(s){
+    var key = (s.date||'') + '_' + (s.signal||'');
+    if (seen.has(key) || _notifiedSignals.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   if (!signals.length) return;
   addSignalHistory(signals);
   signals.forEach(function(s) {
     var key = (s.date||'') + '_' + (s.signal||'');
-    if (_notifiedSignals.has(key)) return;
     _notifiedSignals.add(key);
+    persistNotifiedSignals();
     showSignalToast(s);
     sendSignalNotification(s);
   });
