@@ -4898,22 +4898,32 @@ function hasOpenPosition(key) {
 // 已持倉 → 只追蹤出場訊號（進場/觀察訊號不再顯示，因為已經進場了不需要）
 // 未持倉 → 只追蹤進場訊號（出場訊號不需要，因為根本沒有部位可以出場）
 function shouldShowSignal(s) {
-  if (!s) return true;
+  if (!s) return false;
   var key = s.strategy;
-  if (key !== 'G' && key !== 'Y') return true; // 無法判斷策略歸屬時，保守起見照常顯示
+  // 追蹤訊號只處理 G / Y；00662 等其他來源不混入追蹤區
+  if (key !== 'G' && key !== 'Y') return false;
   var holding = hasOpenPosition(key);
-  if (s.type === 'EXIT') return holding;                      // 出場訊號：只有真的有持倉才顯示
-  if (s.type === 'ENTRY' || s.type === 'WATCH') return !holding; // 進場/觀察訊號：只有還沒持倉才顯示
-  return true; // 其他未知類型，照常顯示
+  if (s.type === 'EXIT') return holding;
+  if (s.type === 'ENTRY') return !holding;
+  // WATCH 不當成需要跳出的即時訊號
+  return false;
 }
 
 function checkAndPushNotify(d) {
   var signals = (d.signals || []).filter(shouldShowSignal);
   if (!signals.length) return;
+  // 同一天、同一訊號只保留一筆，避免刷新時重複跳出
+  var seen = new Set();
+  signals = signals.filter(function(s){
+    var key = (s.date||'') + '_' + (s.signal||'');
+    if (seen.has(key) || _notifiedSignals.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  if (!signals.length) return;
   addSignalHistory(signals);
   signals.forEach(function(s) {
     var key = (s.date||'') + '_' + (s.signal||'');
-    if (_notifiedSignals.has(key)) return;
     _notifiedSignals.add(key);
     showSignalToast(s);
     sendSignalNotification(s);
