@@ -4804,7 +4804,7 @@ function renderSignalToday(d) {
   var signals = (d.signals || []).filter(function(s){ return shouldShowSignal(s, d); });
   var today = getLatestSignalDate(d, 'Y');
 
-  var todaySignals = signals.filter(function(s) { return normalizeSignalDate(s.date) === getLatestSignalDate(d, s.strategy) || !s.date; });
+  var todaySignals = signals.filter(function(s) { return normalizeSignalDate(s.date) === normalizeSignalDate(fmtToday()); });
 
   // 更新上次檢查時間
   var ck = document.getElementById('signal-last-check');
@@ -4952,8 +4952,11 @@ function getLatestSignalDate(d, strategy) {
 
 function isLatestSignal(s, d) {
   if (!s) return false;
-  if (!s.date) return true;
-  return normalizeSignalDate(s.date) === getLatestSignalDate(d, s.strategy);
+  // 即時訊號只允許「今天」的訊號；Firebase/Worker 若殘留舊日期（例如 2026/09/04），一律禁止彈窗、通知與今日訊號顯示。
+  if (!s.date) return false;
+  var signalDate = normalizeSignalDate(s.date);
+  var todayDate = normalizeSignalDate(fmtToday());
+  return signalDate === todayDate;
 }
 
 // 判斷某策略(G=灰K/00631L, Y=黃K/0050)目前是否有實際未平倉部位
