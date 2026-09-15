@@ -4649,6 +4649,26 @@ function initSignalListener() {
       if (!snap.exists()) return;
       const d = snap.data();
       window._latestSignalData = d;
+
+      // 00662 即時報價：kline-signal Worker → Firebase dashboard/signals.prices.00662
+      // 只更新價格，不改動股數與成本；避免覆蓋使用者帳務資料。
+      try {
+        var nqQuote = d.prices && d.prices['00662'];
+        var nqPrice = nqQuote && Number(nqQuote.price);
+        if (isFinite(nqPrice) && nqPrice > 0) {
+          var nqBase = DATA.NQ || {shares:3000,cost:232030,price:0};
+          DATA.NQ = Object.assign({}, nqBase, {
+            price: nqPrice,
+            pnl: nqPrice * (Number(nqBase.shares)||0) - (Number(nqBase.cost)||0)
+          });
+          renderNQ();
+          renderOpenPositions();
+          renderSummary();
+        }
+      } catch (nqErr) {
+        console.warn('00662 報價更新失敗:', nqErr.message || nqErr);
+      }
+
       renderSignalToday(d);
       renderSignalHistory();
       renderTrackingStatus(d);
