@@ -481,6 +481,7 @@ canvas.d-chart { width:100%; display:block; }
 .filter-bar label { font-size:11px; color:var(--muted); }
 .filter-clear { font-size:11px; padding:5px 10px; border-radius:6px; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.25); color:var(--red); cursor:pointer; }
 </style>
+<!-- CLEAN BUILD 2026-09-15: 00662 + signal-date fix + renderSummary null-safety -->
 </head>
 <body>
 
@@ -3023,26 +3024,10 @@ function renderSummary() {
 
   // ── 首頁即時決策摘要 ──
   var currentDD = calcPortfolioCurrentDrawdown(totalNet);
-  var ddTxt = currentDD.amt > 0 ? '-$'+fmt(Math.round(currentDD.amt))+' ('+currentDD.pct.toFixed(1)+'%)' : '0 (無回撤)';
-  var ddCls = currentDD.amt > 0 ? (currentDD.pct >= 10 ? 'neg' : 'neu') : 'pos';
-  var kpis = [
-    ['投入總資金','$'+fmt(totalCap),'neu'],
-    ['已實現損益',(totalRealized>=0?'+':'')+'$'+fmt(totalRealized),totalRealized>=0?'pos':'neg'],
-    ['未實現損益',(totalFloat>=0?'+':'')+'$'+fmt(totalFloat),totalFloat>=0?'pos':'neg'],
-    ['目前淨損益',(totalNet>=0?'+':'')+'$'+fmt(totalNet),totalNet>=0?'pos':'neg'],
-    ['目前回撤',ddTxt,ddCls],
-    ['目前報酬率',(totalRet>=0?'+':'')+totalRet.toFixed(2)+'%',totalRet>=0?'pos':'neg']
-  ];
-  var kpiEl = document.getElementById('portfolio-kpis');
-  if (kpiEl) kpiEl.innerHTML = kpis.map(function(x){return '<div class="mc"><div class="mc-l">'+x[0]+'</div><div class="mc-v '+x[2]+'">'+x[1]+'</div></div>';}).join('');
-  var riskEl = document.getElementById('portfolio-risk-note');
-  if (riskEl) riskEl.textContent = currentDD.amt > 0
-    ? '目前回撤＝目前淨損益相對歷史已實現損益高點的回落；未來可再加入資金流／再平衡校正。'
-    : '目前未低於歷史已實現損益高點。';
 
   var contribEl = document.getElementById('strategy-contrib-body');
   if (contribEl) contribEl.innerHTML = contribRows;
-  var allocNames={C:'🔵 楚策略',G:'⬜ 灰K',Y:'🟡 黃K',T:'🟢 台積電'};
+  var allocNames={C:'🔵 楚策略',G:'⬜ 灰K',Y:'🟡 黃K',T:'🟢 長期投資',NQ:'🟣 00662 NQ'};
   var allocEl = document.getElementById('allocation-block');
   if (allocEl) allocEl.innerHTML = strategies.map(function(st){
     var pct=totalCap>0?st.capital/totalCap*100:0;
@@ -3494,7 +3479,8 @@ function renderPerfChart() {
   }
 
   // ── Legend ──
-  document.getElementById('perfLegend').innerHTML =
+  var perfLegendEl = document.getElementById('perfLegend');
+  if (perfLegendEl) perfLegendEl.innerHTML =
     strats.map(function(s){
       return '<div class="perf-legend-item"><div class="perf-legend-dot" style="background:'+s.color+'"></div>'+s.label+'</div>';
     }).join('')
@@ -3526,7 +3512,8 @@ function renderPerfChart() {
   (DATA.T||[]).forEach(function(r){var p=cpnl(r,TSMC_PRICE);if(p===null)return;r.ex?totR+=p-r.fee:totF+=p-r.fee;});
   var totCap=1200000+750000+750000+500000;
   var totRet = totCap>0 ? (totR+totF)/totCap*100 : 0;
-  document.getElementById('perfKpi').innerHTML=[
+  var perfKpiEl = document.getElementById('perfKpi');
+  if (perfKpiEl) perfKpiEl.innerHTML=[
     ['累積已實現損益',(totR>=0?'+$':'-$')+fmt(Math.abs(totR)),totR>=0?'var(--gain)':'var(--loss)'],
     ['浮動損益',     (totF>=0?'+$':'-$')+fmt(Math.abs(totF)),totF>=0?'var(--gain)':'var(--loss)'],
     ['投入總資金',   '$'+fmt(totCap),'#9ca3af'],
@@ -4590,7 +4577,7 @@ function renderOverviewBlocksSafe() {
     // 資金配置：這一塊只依基準／再平衡後資金計算，不依賴交易損益。
     var alloc = document.getElementById('allocation-block');
     if (alloc) {
-      var allocNames={C:'🔵 楚策略',G:'⬜ 灰K',Y:'🟡 黃K',T:'🟢 台積電'};
+      var allocNames={C:'🔵 楚策略',G:'⬜ 灰K',Y:'🟡 黃K',T:'🟢 長期投資',NQ:'🟣 00662 NQ'};
       alloc.innerHTML = strategies.map(function(st){
         var c=Number(CAPITAL[st.key])||0;
         var pct=totalCap>0?c/totalCap*100:0;
