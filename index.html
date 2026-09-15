@@ -1429,11 +1429,30 @@ function normalizeDDates(dataObj) {
     }
     return s;
   }
-  (dataObj.D||[]).forEach(function(r){ r.date = _nd(r.date); });
-  (dataObj.D_io||[]).forEach(function(r){ r.date = _nd(r.date); });
-  (dataObj.D_eq||[]).forEach(function(r){ r.date = _nd(r.date); });
+  // Firebase 舊資料偶爾會把某個策略欄位存成 object，而不是 array。
+  // 這裡先安全轉成陣列，避免 initData 因 .forEach() 直接中斷。
+  function _arr(v, key) {
+    if (Array.isArray(v)) return v;
+    if (v && typeof v === 'object') {
+      var keys = Object.keys(v).sort(function(a,b){
+        var na=Number(a), nb=Number(b);
+        if (!isNaN(na) && !isNaN(nb)) return na-nb;
+        return a.localeCompare(b);
+      });
+      console.warn('normalizeDDates: '+key+' 不是陣列，已轉為陣列');
+      return keys.map(function(x){ return v[x]; });
+    }
+    if (v != null) console.warn('normalizeDDates: '+key+' 資料型態異常，已改為空陣列');
+    return [];
+  }
+  ['D','D_io','D_eq'].forEach(function(k){
+    dataObj[k] = _arr(dataObj[k], k);
+    dataObj[k].forEach(function(r){ if (r && r.date != null) r.date = _nd(r.date); });
+  });
   ['G','Y','T','NQ','C'].forEach(function(k){
-    (dataObj[k]||[]).forEach(function(r){
+    dataObj[k] = _arr(dataObj[k], k);
+    dataObj[k].forEach(function(r){
+      if (!r || typeof r !== 'object') return;
       if (r.ed) r.ed = _nd(r.ed);
       if (r.xd) r.xd = _nd(r.xd);
     });
@@ -2998,8 +3017,9 @@ function renderSummary() {
   const totalCurCash = totalCap + totalRealized;
   cardsHtml += ''+'    <div class="sum-total">'+'      <div class="sum-card-title">'+'        <span style="font-size:14px">&#x1F4CA; 全部合計</span>'+'        <span class="sum-ret '+(totalRet>=0?'pp':'nn')+'">'+(totalRet>=0?'+':'')+totalRet.toFixed(2)+'%</span>'+'      </div>'+'      <div class="sum-grid">'+'        <div class="sum-item">'+'          <span class="sum-label">投入總資金</span>'+'          <span class="sum-value" style="color:var(--muted2)">$'+fmt(totalCap)+'</span>'+'        </div>'+'        <div class="sum-item">'+'          <span class="sum-label">目前總資金</span>'+'          <span class="sum-value '+(totalCurCash>=totalCap?'pp':'nn')+'">$'+fmt(totalCurCash)+'</span>'+'        </div>'+'        <div class="sum-item">'+'          <span class="sum-label">已實現損益</span>'+'          <span class="sum-value '+(totalRealized>=0?'pp':'nn')+'">'+(totalRealized>=0?'+':'')+'$'+fmt(totalRealized)+'</span>'+'        </div>'+'        <div class="sum-item">'+'          <span class="sum-label">浮動損益</span>'+'          <span class="sum-value '+(totalFloat>=0?'pp':'nn')+'">'+(totalFloat>=0?'+':'')+'$'+fmt(totalFloat)+'</span>'+'        </div>'+'      </div>'+'    </div>';
 
-  document.getElementById('summary-cards').innerHTML = cardsHtml;
-  renderOpenPositions();
+  var summaryCardsEl = document.getElementById('summary-cards');
+  if (summaryCardsEl) summaryCardsEl.innerHTML = cardsHtml;
+  try { renderOpenPositions(); } catch(e) { console.warn('renderOpenPositions:', e); }
 
   // ── 首頁即時決策摘要 ──
   var currentDD = calcPortfolioCurrentDrawdown(totalNet);
@@ -3013,14 +3033,18 @@ function renderSummary() {
     ['目前回撤',ddTxt,ddCls],
     ['目前報酬率',(totalRet>=0?'+':'')+totalRet.toFixed(2)+'%',totalRet>=0?'pos':'neg']
   ];
-  document.getElementById('portfolio-kpis').innerHTML = kpis.map(function(x){return '<div class="mc"><div class="mc-l">'+x[0]+'</div><div class="mc-v '+x[2]+'">'+x[1]+'</div></div>';}).join('');
-  document.getElementById('portfolio-risk-note').textContent = currentDD.amt > 0
+  var kpiEl = document.getElementById('portfolio-kpis');
+  if (kpiEl) kpiEl.innerHTML = kpis.map(function(x){return '<div class="mc"><div class="mc-l">'+x[0]+'</div><div class="mc-v '+x[2]+'">'+x[1]+'</div></div>';}).join('');
+  var riskEl = document.getElementById('portfolio-risk-note');
+  if (riskEl) riskEl.textContent = currentDD.amt > 0
     ? '目前回撤＝目前淨損益相對歷史已實現損益高點的回落；未來可再加入資金流／再平衡校正。'
     : '目前未低於歷史已實現損益高點。';
 
-  document.getElementById('strategy-contrib-body').innerHTML = contribRows;
+  var contribEl = document.getElementById('strategy-contrib-body');
+  if (contribEl) contribEl.innerHTML = contribRows;
   var allocNames={C:'🔵 楚策略',G:'⬜ 灰K',Y:'🟡 黃K',T:'🟢 台積電'};
-  document.getElementById('allocation-block').innerHTML = strategies.map(function(st){
+  var allocEl = document.getElementById('allocation-block');
+  if (allocEl) allocEl.innerHTML = strategies.map(function(st){
     var pct=totalCap>0?st.capital/totalCap*100:0;
     return '<div style="display:flex;align-items:center;gap:10px;margin:8px 0">'
       +'<div style="width:88px;font-size:11px;font-weight:700;flex-shrink:0">'+allocNames[st.key]+'</div>'
