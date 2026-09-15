@@ -4721,9 +4721,16 @@ window.checkSignalsNow = async function() {
     var hm = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
     if (el) el.textContent = '上次檢查：'+hm;
     if (json.ok && json.signals && json.signals.length) {
-      var filtered = json.signals.filter(shouldShowSignal);
+      var filtered = json.signals.filter(function(s){ return shouldShowSignal(s, json); });
       if (filtered.length) {
-        filtered.forEach(function(s) { showSignalToast(s); });
+        var manualNew = filtered.filter(function(s){
+          var key = (normalizeSignalDate(s.date)||'') + '_' + (s.strategy||'') + '_' + (s.signal||'');
+          if (_notifiedSignals.has(key)) return false;
+          _notifiedSignals.add(key);
+          return true;
+        });
+        persistNotifiedSignals();
+        manualNew.forEach(function(s) { showSignalToast(s); });
       } else {
         showSignalToast({ signal:'&#x1F4CA; 今日無訊號', detail:'K線條件未觸發，或出場訊號因目前無持倉已自動忽略', type:'INFO' });
       }
@@ -4794,10 +4801,10 @@ function renderTrackingStatus(d) {
 function renderSignalToday(d) {
   var el = document.getElementById('signal-today');
   if (!el) return;
-  var signals = (d.signals || []).filter(shouldShowSignal);
-  var today = fmtToday();
+  var signals = (d.signals || []).filter(function(s){ return shouldShowSignal(s, d); });
+  var today = getLatestSignalDate(d, 'Y');
 
-  var todaySignals = signals.filter(function(s) { return s.date === today || !s.date; });
+  var todaySignals = signals.filter(function(s) { return normalizeSignalDate(s.date) === getLatestSignalDate(d, s.strategy) || !s.date; });
 
   // 更新上次檢查時間
   var ck = document.getElementById('signal-last-check');
@@ -4913,28 +4920,61 @@ function renderSignalHistory() {
 }
 
 // ── 推播通知 ──
+// 通知去重持久化：重新整理頁面後也不會再次跳出同一筆訊號
 var _notifiedSignals = new Set();
+try {
+  var _savedNotifyKeys = JSON.parse(localStorage.getItem('signalNotifiedKeys') || '[]');
+  if (Array.isArray(_savedNotifyKeys)) _savedNotifyKeys.forEach(function(k){ _notifiedSignals.add(k); });
+} catch(e) {}
+function persistNotifiedSignals() {
+  try {
+    localStorage.setItem('signalNotifiedKeys', JSON.stringify(Array.from(_notifiedSignals).slice(-200)));
+  } catch(e) {}
+}
+
+function normalizeSignalDate(v) {
+  if (!v) return '';
+  var s = String(v).trim();
+  var m = s.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+  return m ? m[1]+'/'+String(m[2]).padStart(2,'0')+'/'+String(m[3]).padStart(2,'0') : s;
+}
+
+// 取得該策略目前資料的「最新交易日」。舊訊號（例如 2026/09/04）不再當成今天訊號。
+function getLatestSignalDate(d, strategy) {
+  if (!d) return fmtToday();
+  var sym = strategy === 'G' ? '00631L' : '0050';
+  var kd = d.klineDate;
+  var v = kd && kd[sym];
+  if (!v) v = d.updatedAt;
+  var n = normalizeSignalDate(v);
+  return n || fmtToday();
+}
+
+function isLatestSignal(s, d) {
+  if (!s) return false;
+  if (!s.date) return true;
+  return normalizeSignalDate(s.date) === getLatestSignalDate(d, s.strategy);
+}
+
 // 判斷某策略(G=灰K/00631L, Y=黃K/0050)目前是否有實際未平倉部位
 function hasOpenPosition(key) {
   return (DATA[key] || []).some(function(r) { return !r.ex; });
 }
 
-// 已持倉 → 只追蹤出場訊號（進場/觀察訊號不再顯示，因為已經進場了不需要）
-// 未持倉 → 只追蹤進場訊號（出場訊號不需要，因為根本沒有部位可以出場）
-function shouldShowSignal(s) {
+// 已持倉 → 只追蹤出場；未持倉 → 只追蹤進場；舊日期訊號一律不再視為即時訊號
+function shouldShowSignal(s, d) {
   if (!s) return false;
   var key = s.strategy;
-  // 追蹤訊號只處理 G / Y；00662 等其他來源不混入追蹤區
   if (key !== 'G' && key !== 'Y') return false;
+  if (d && !isLatestSignal(s, d)) return false;
   var holding = hasOpenPosition(key);
   if (s.type === 'EXIT') return holding;
   if (s.type === 'ENTRY') return !holding;
-  // WATCH 不當成需要跳出的即時訊號
   return false;
 }
 
 function checkAndPushNotify(d) {
-  var signals = (d.signals || []).filter(shouldShowSignal);
+  var signals = (d.signals || []).filter(function(s){ return shouldShowSignal(s, d); });
   if (!signals.length) return;
   // 同一天、同一訊號只保留一筆，避免刷新時重複跳出
   var seen = new Set();
@@ -4949,6 +4989,7 @@ function checkAndPushNotify(d) {
   signals.forEach(function(s) {
     var key = (s.date||'') + '_' + (s.signal||'');
     _notifiedSignals.add(key);
+    persistNotifiedSignals();
     showSignalToast(s);
     sendSignalNotification(s);
   });
