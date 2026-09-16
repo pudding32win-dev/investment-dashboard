@@ -1431,7 +1431,7 @@ if (!canEdit) document.body.classList.add('readonly');
 
 // ══ 00662 NQ 長期投資編輯 ══
 function getNQData() {
-  var q = DATA.NQ || {shares:3000,cost:232030,price:39.0723333333,pnl:-114813};
+  var q = (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : {shares:3000,cost:232030,price:39.0723333333,pnl:-114813};
   q.shares = Number(q.shares)||0; q.cost = Number(q.cost)||0; q.price = Number(q.price)||0;
   return q;
 }
@@ -1538,7 +1538,7 @@ async function initData() {
     const snap = await getDoc(DOC_REF);
     if (snap.exists()) {
       const d = snap.data();
-      DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], NQ: Array.isArray(d.NQ) ? d.NQ : [{batch:'00662 NQ｜長期投資',shares:3000,ed:'2026/07/29',en:115.61,fee:13}], RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
+      DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : {shares:3000,cost:232030,price:39.0723333333,pnl:-114813}, RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
       // 一次性搬移：若 Firebase 尚無 PL/RC/RB 但本機 localStorage 有舊紀錄，搬過去並清空本機
       try {
         if ((!DATA.PL || !DATA.PL.length)) {
@@ -1587,7 +1587,7 @@ async function initData() {
       normalizeDDates(DATA);
       await setDoc(DOC_REF, DATA);
     }
-    if (!Array.isArray(DATA.NQ) || !DATA.NQ.length) DATA.NQ=[{batch:'00662 NQ｜長期投資',shares:3000,ed:'2026/07/29',en:115.61,fee:13}];
+    if (!DATA.NQ || Array.isArray(DATA.NQ)) DATA.NQ={shares:3000,cost:232030,price:39.0723333333,pnl:-114813};
     setCloudStatus('connected', '已連線 · 即時同步中');
     _mktReady = true; // ✅ Firebase 資料已確認載入完成，大盤週期功能可以開始運作
     _isOfflineMode = false; // ✅ 確認是雲端最新資料，允許正常存檔
@@ -1599,7 +1599,7 @@ async function initData() {
         const d = snap.data();
         // 只在非本機儲存觸發時才更新（避免自己觸發自己）
         if (!isSaving) {
-          DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], NQ: Array.isArray(d.NQ) ? d.NQ : [{batch:'00662 NQ｜長期投資',shares:3000,ed:'2026/07/29',en:115.61,fee:13}], RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
+          DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : {shares:3000,cost:232030,price:39.0723333333,pnl:-114813}, RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
           normalizeDDates(DATA);
           _rebalCapital = DATA.RC || {};
           _mktReady = true;
@@ -3003,7 +3003,7 @@ function renderSummary() {
 
   var contribEl = document.getElementById('strategy-contrib-body');
   if (contribEl) contribEl.innerHTML = contribRows;
-  var allocNames={C:'🔵 楚策略',G:'⬜ 灰K',Y:'🟡 黃K',T:'🟢 台積電'};
+  var allocNames={C:'🔵 楚策略',G:'⬜ 灰K',Y:'🟡 黃K',T:'🟢 台積電',NQ:'🟣 00662 NQ'};
   var allocationEl = document.getElementById('allocation-block');
   if (allocationEl) allocationEl.innerHTML = strategies.map(function(st){
     var pct=totalCap>0?st.capital/totalCap*100:0;
@@ -4544,17 +4544,18 @@ function renderOverviewBlocksSafe() {
       {name:'🔵 楚策略（台指期）', key:'C'},
       {name:'⬜ 灰K策略', key:'G'},
       {name:'🟡 黃K策略', key:'Y'},
-      {name:'🟢 長期投資', key:'T'}
+      {name:'🟢 長期投資', key:'T'},
+      {name:'🟣 00662 NQ', key:'NQ'}
     ];
     var totalCap = 0;
-    strategies.forEach(function(st){ totalCap += Number(CAPITAL[st.key]) || 0; });
+    strategies.forEach(function(st){ totalCap += st.key==='NQ' ? Number(getNQData().cost)||0 : (Number(CAPITAL[st.key]) || 0); });
 
     // 資金配置：這一塊只依基準／再平衡後資金計算，不依賴交易損益。
     var alloc = document.getElementById('allocation-block');
     if (alloc) {
       var allocNames={C:'🔵 楚策略',G:'⬜ 灰K',Y:'🟡 黃K',T:'🟢 台積電'};
       alloc.innerHTML = strategies.map(function(st){
-        var c=Number(CAPITAL[st.key])||0;
+        var c=st.key==='NQ'?Number(getNQData().cost)||0:Number(CAPITAL[st.key])||0;
         var pct=totalCap>0?c/totalCap*100:0;
         return '<div style=\"display:flex;align-items:center;gap:10px;margin:8px 0\">'
           +'<div style=\"width:88px;font-size:11px;font-weight:700;flex-shrink:0\">'+allocNames[st.key]+'</div>'
@@ -4586,6 +4587,10 @@ function renderOverviewBlocksSafe() {
               if(gm[gid].every(function(r){return !!r.ex;})) realized += gp-gf;
             });
             (DATA.C||[]).forEach(function(r){if(!r.ex){var p=txfPnl(r);if(p!==null&&isFinite(p))floating += p-(Number(r.fee)||0);}});
+          } else if (st.key==='NQ') {
+            var nq=getNQData();
+            realized=0;
+            floating=(Number(nq.price)||0)*(Number(nq.shares)||0)-(Number(nq.cost)||0);
           } else {
             var px=st.key==='T'?TSMC_PRICE:(st.key==='Y'?PRICE_0050:MARKET_PRICE);
             (DATA[st.key]||[]).forEach(function(r){
