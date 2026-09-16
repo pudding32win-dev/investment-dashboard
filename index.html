@@ -1,4 +1,3 @@
-<!-- PREVIEW EDITABLE / YELLOW-K SIGNAL DISABLED / 2026-09-15 -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -8,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d0f14">
 <title>策略儀表板</title>
-<!-- BUILD_VERSION: 2026-09-15-TSMC700-NQ-EDIT-SAME (出場提醒已加持倉過濾 / MKT transaction-only寫入 / DD手動編輯) -->
-<meta name="build-version" content="2026-09-15-TSMC700-NQ-EDIT-SAME">
+<!-- BUILD_VERSION: 2026-08-02-01 (出場提醒已加持倉過濾 / MKT transaction-only寫入 / DD手動編輯) -->
+<meta name="build-version" content="2026-08-02-01">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -480,7 +479,7 @@ canvas.d-chart { width:100%; display:block; }
 .filter-bar label { font-size:11px; color:var(--muted); }
 .filter-clear { font-size:11px; padding:5px 10px; border-radius:6px; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.25); color:var(--red); cursor:pointer; }
 </style>
-<meta name="dashboard-version" content="2026-09-15-NQ-EDIT-SIGNALFIX-V3"><!-- 黃K保留；只顯示今日有效訊號並防止重複通知 --></head>
+</head>
 <body>
 
 <!-- ── 通知側欄 ── -->
@@ -489,7 +488,7 @@ canvas.d-chart { width:100%; display:block; }
   <div class="np-section">
     <div class="np-label">進場訊號通知</div>
     <div class="np-row"><span>灰K策略進場訊號</span><div class="toggle on" id="tog-gray" onclick="this.classList.toggle('on')"></div></div>
-    <div class="np-row" style="display:none"><span>黃K策略進場訊號</span><div class="toggle" id="tog-yellow"></div></div>
+    <div class="np-row"><span>黃K策略進場訊號</span><div class="toggle on" id="tog-yellow" onclick="this.classList.toggle('on')"></div></div>
     <div class="np-row"><span>長期投資進場訊號</span><div class="toggle on" id="tog-tsmc" onclick="this.classList.toggle('on')"></div></div>
   </div>
   <div class="np-section">
@@ -1026,13 +1025,12 @@ canvas.d-chart { width:100%; display:block; }
 <!-- ══ 長期投資面板 ══ -->
 <div class="panel" id="panel-T">
   <div style="padding:12px 0 6px;font-size:12px;color:var(--muted)">
-    長期投資　｜　2330 台積電核心持倉　｜　700 股　｜　含手續費成本獨立計算　｜　2330 期初資金 $500,000
+    長期投資　｜　2330 台積電核心持倉　｜　2330 期初資金 $500,000
   </div>
   <div style="padding:6px 0 2px">
     <div style="font-size:11px;color:var(--muted);margin:0 0 6px 2px;font-weight:700">🟢 2330 台積電</div>
     <div class="metrics" id="metrics-T"></div>
   </div>
-  <div class="card" style="margin-top:8px;border-color:rgba(52,211,153,.18)"><div class="card-bd" style="padding:10px 14px;font-size:11px;color:var(--muted2);line-height:1.7">台積電目前持有 <b style="color:var(--text)">700 股</b>。成本顯示分為本金成本、手續費及<b style="color:var(--text)">含手續費總成本</b>。其中「帳務補正」只用來補齊你確認的 700 股與總成本，不代表一筆實際成交。</div></div>
   <div style="margin:14px 0 8px;font-size:12px;font-weight:800;color:var(--green)">📊 2330 台積電｜交易批次紀錄</div>
   <div class="card">
     <div class="card-hd" style="display:flex;align-items:center;gap:8px">📋 台積電 2330 批次紀錄 <span style="font-size:11px;color:var(--muted);font-weight:400">▶ 展開明細</span></div>
@@ -1082,26 +1080,38 @@ canvas.d-chart { width:100%; display:block; }
 <!-- ══ 00662 NQ 獨立頁籤 ══ -->
 <div class="panel" id="panel-N">
   <div style="padding:12px 0 6px;font-size:12px;color:var(--muted)">
-    00662 NQ　｜　長期投資獨立帳務　｜　編輯方式與 2330 台積電完全相同
+    00662 NQ　｜　長期投資獨立帳務　｜　不併入 2330 台積電成本與交易紀錄
   </div>
   <div class="card">
     <div class="card-hd" style="display:flex;align-items:center;justify-content:space-between">
       <span>🟣 00662 NQ｜長期投資</span>
-      <span style="font-size:11px;color:#c4b5fd">?edit=pudding2026 開啟編輯</span>
+      <button id="btn-edit-nq" onclick="openNQEdit()" style="display:none;padding:5px 10px;border-radius:6px;border:1px solid rgba(196,181,253,.45);background:rgba(196,181,253,.10);color:#c4b5fd;font-size:11px;cursor:pointer">✏️ 編輯 00662</button>
     </div>
     <div class="card-bd">
       <div class="metrics" id="metrics-NQ"></div>
-      <div class="table-wrap" style="margin-top:10px;overflow:auto">
-        <table><thead><tr><th></th><th>批次</th><th>股數</th><th>進場日期</th><th>出場日期</th><th>持有天數</th><th>損益</th><th>手續費</th><th>淨損益</th><th>報酬率</th><th>累積淨損益</th><th>操作</th></tr></thead>
-        <tbody id="tbody-NQ"></tbody></table>
+      <div class="card" style="margin-top:10px">
+        <div class="card-bd" id="nq-info" style="padding:12px 14px;font-size:11px;color:var(--muted2);line-height:1.7"></div>
       </div>
-      <div id="nq-info" style="margin-top:10px;font-size:11px;color:var(--muted2);line-height:1.7"></div>
+      <div id="nq-edit-box" class="card" style="display:none;margin-top:10px;border:1px solid rgba(196,181,253,.35)">
+        <div class="card-hd" style="color:#c4b5fd">✏️ 編輯 00662 NQ</div>
+        <div class="card-bd" style="display:grid;gap:9px">
+          <label style="font-size:11px;color:var(--muted)">持有股數<input id="nqShares" type="number" min="0" step="1" style="width:100%;margin-top:4px;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text)"></label>
+          <label style="font-size:11px;color:var(--muted)">持倉成本<input id="nqCost" type="number" min="0" step="1" style="width:100%;margin-top:4px;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text)"></label>
+          <label style="font-size:11px;color:var(--muted)">目前價格<input id="nqPrice" type="number" min="0" step="0.01" style="width:100%;margin-top:4px;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text)"></label>
+          <div style="font-size:11px;color:var(--muted2)">未兌現損益、報酬率、平均成本會自動計算。</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button onclick="saveNQEdit()" style="padding:8px 14px;border-radius:6px;border:1px solid rgba(52,211,153,.4);background:rgba(52,211,153,.10);color:#34d399;font-weight:700;cursor:pointer">💾 儲存 00662</button>
+            <button onclick="closeNQEdit()" style="padding:8px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">取消</button>
+            <span id="nq-edit-msg" class="form-msg"></span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="card">
-    <div class="card-hd">📌 00662 編輯</div>
+    <div class="card-hd">📌 00662 使用方式</div>
     <div class="card-bd" style="font-size:12px;color:var(--muted2);line-height:1.9">
-      直接展開「00662 NQ｜長期投資」批次，就會看到每一筆明細；按「編輯」即可使用與 2330 台積電完全相同的編輯視窗。
+      這個頁籤只管理 00662。股數、成本與價格可獨立編輯並備份；即時報價由 kline-signal 提供。2330 台積電頁籤維持原本資料與邏輯，不受影響。
     </div>
   </div>
 </div>
@@ -1251,7 +1261,6 @@ const DEFAULT_DATA = {
     {batch:'台積電持股',shares:5,   ed:'2026/1/9',  en:1695, fee:12},
     {batch:'台積電持股',shares:50,  ed:'2026/3/9',  en:1795, fee:127},
     {batch:'台積電持股',shares:50,  ed:'2026/3/31', en:1770, fee:126},
-    {batch:'台積電持股｜帳務補正',shares:391, ed:'2026/9/15', en:2246.41943734, fee:1230}, // 700股/含手續費成本帳務補正，不代表單筆成交
   ],
     Y: [
     {batch:'黃K1',shares:1510, ed:'2026/3/18', en:495.3344371, xd:'2026/3/23', ex:441.62,fee:2683},
@@ -1348,7 +1357,7 @@ const DEFAULT_DATA = {
     {date:'2026/5/25',equity:480325},
   ],
   PL: [],
-  NQ: [{ batch:'00662 NQ｜長期投資', shares:3000, ed:'2026/07/29', en:115.61, fee:13 }],
+  NQ: { shares:3000, cost:232030, price:39.0723333333, pnl:-114813 },
   RC: {},
   RB: null,
   MKT: { ath: null, athHistory: [], ddHistory: [], ddRef: null, ddTriggered: {} },
@@ -1408,7 +1417,7 @@ function normalizeDDates(dataObj) {
 }
 
 let DATA = { G:[], Y:[], C:[], T:[], D:[], D_io:[], D_eq:[], PL:[], RC:{}, RB:null, MKT:{ ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
-let expanded = { G:{}, Y:{}, T:{}, NQ:{} };
+let expanded = { G:{}, Y:{}, T:{} };
 let expandedC = {};
 let editState = { s:'G', idx:-1, mode:'', fixBatch:'' };
 let notifySettings = { gray:true, yellow:true, tsmc:true, price631:null, price0050:null };
@@ -1417,40 +1426,39 @@ let isSaving = false;
 // ── 編輯權限 ──
 const EDIT_KEY = 'pudding2026';
 const urlKey = new URLSearchParams(location.search).get('edit');
-const canEdit = true; // 預覽版固定可編輯，不受網址 edit 參數影響
+const canEdit = urlKey === EDIT_KEY;
 if (!canEdit) document.body.classList.add('readonly');
 
-// ══ 00662 NQ：與 2330 台積電共用同一套明細編輯系統 ══
-function normalizeNQData(obj) {
-  if (!Array.isArray(obj.NQ)) {
-    obj.NQ = [{ batch:'00662 NQ｜長期投資', shares:3000, ed:'2026/07/29', en:115.61, fee:13 }];
-  }
-  obj.NQ.forEach(function(r){
-    r.shares=Number(r.shares)||0; r.en=Number(r.en)||0; r.fee=Number(r.fee)||0;
-    if(r.ed) r.ed=normalizeDate(r.ed);
-    if(r.xd) r.xd=normalizeDate(r.xd);
-  });
-  return obj.NQ;
-}
+// ══ 00662 NQ 長期投資編輯 ══
 function getNQData() {
-  var rows=normalizeNQData(DATA);
-  var shares=rows.reduce(function(a,r){return a+(Number(r.shares)||0);},0);
-  var cost=rows.reduce(function(a,r){return a+(Number(r.en)||0)*(Number(r.shares)||0)+(Number(r.fee)||0);},0);
-  return {rows:rows,shares:shares,cost:cost,price:Number(NQ_PRICE)||0};
+  var q = DATA.NQ || {shares:3000,cost:232030,price:39.0723333333,pnl:-114813};
+  q.shares = Number(q.shares)||0; q.cost = Number(q.cost)||0; q.price = Number(q.price)||0;
+  return q;
 }
 function renderNQ() {
-  var q=getNQData(), avg=q.shares>0?q.cost/q.shares:0, mv=q.price*q.shares, pnl=q.price>0?mv-q.cost:null, ret=(q.cost>0&&pnl!==null)?pnl/q.cost*100:null;
+  var q=getNQData(), avg=q.shares>0?q.cost/q.shares:0, mv=q.price*q.shares, pnl=mv-q.cost, ret=q.cost>0?pnl/q.cost*100:0;
   var m=document.getElementById('metrics-NQ');
   if(m) m.innerHTML='<div class="metric"><div class="metric-label">持有股數</div><div class="metric-val">'+fmt(q.shares)+' 股</div></div>' +
-    '<div class="metric"><div class="metric-label">付出成本</div><div class="metric-val">$'+fmt(q.cost)+'</div></div>' +
+    '<div class="metric"><div class="metric-label">持倉成本</div><div class="metric-val">$'+fmt(q.cost)+'</div></div>' +
     '<div class="metric"><div class="metric-label">平均成本</div><div class="metric-val">$'+avg.toFixed(2)+'</div></div>' +
-    '<div class="metric"><div class="metric-label">目前價格</div><div class="metric-val">'+(q.price?'$'+q.price.toFixed(2):'報價載入中…')+'</div></div>' +
-    '<div class="metric"><div class="metric-label">未兌現損益</div><div class="metric-val '+(pnl!==null?(pnl>=0?'pp':'nn'):'')+'">'+(pnl===null?'—':(pnl>=0?'+':'-')+'$'+fmt(Math.abs(pnl)))+'</div></div>' +
-    '<div class="metric"><div class="metric-label">報酬率</div><div class="metric-val '+(ret!==null?(ret>=0?'pp':'nn'):'')+'">'+(ret===null?'—':(ret>=0?'+':'')+ret.toFixed(1)+'%')+'</div></div>';
+    '<div class="metric"><div class="metric-label">目前價格</div><div class="metric-val">$'+q.price.toFixed(2)+'</div></div>' +
+    '<div class="metric"><div class="metric-label">未兌現損益</div><div class="metric-val '+(pnl>=0?'pp':'nn')+'">'+(pnl>=0?'+':'-')+'$'+fmt(Math.abs(pnl))+'</div></div>' +
+    '<div class="metric"><div class="metric-label">報酬率</div><div class="metric-val '+(ret>=0?'pp':'nn')+'">'+(ret>=0?'+':'')+ret.toFixed(1)+'%</div></div>';
   var info=document.getElementById('nq-info');
-  if(info) info.innerHTML='<b style="color:#c4b5fd">00662 NQ 長期投資</b><br>目前持有 <b style="color:var(--text)">'+fmt(q.shares)+' 股</b>，付出成本 <b style="color:var(--text)">$'+fmt(q.cost)+'</b>，平均成本 <b style="color:var(--text)">$'+avg.toFixed(2)+'</b>。此部位獨立於 2330 台積電交易紀錄。';
-  renderTable('NQ');
+  if(info) info.innerHTML='<b style="color:#c4b5fd">00662 NQ 長期投資</b><br>目前持有 <b style="color:var(--text)">'+fmt(q.shares)+' 股</b>，帳務成本 <b style="color:var(--text)">$'+fmt(q.cost)+'</b>，目前價格 <b style="color:var(--text)">$'+q.price.toFixed(2)+'</b>，未兌現損益 <b class="'+(pnl>=0?'pp':'nn')+'">'+(pnl>=0?'+':'-')+'$'+fmt(Math.abs(pnl))+'</b>。此部位獨立於台積電 2330 交易紀錄。';
+  var b=document.getElementById('btn-edit-nq'); if(b) b.style.display=canEdit?'inline-block':'none';
 }
+window.openNQEdit=function(){ if(!canEdit)return; var q=getNQData(); document.getElementById('nqShares').value=q.shares; document.getElementById('nqCost').value=q.cost; document.getElementById('nqPrice').value=q.price; document.getElementById('nq-edit-box').style.display='block'; };
+window.closeNQEdit=function(){ var e=document.getElementById('nq-edit-box'); if(e)e.style.display='none'; };
+window.saveNQEdit=async function(){
+  if(!canEdit){alert('⛔ 唯讀模式');return;}
+  var shares=parseInt(document.getElementById('nqShares').value), cost=parseFloat(document.getElementById('nqCost').value), price=parseFloat(document.getElementById('nqPrice').value);
+  if(!isFinite(shares)||shares<0||!isFinite(cost)||cost<0||!isFinite(price)||price<0){alert('請輸入正確的股數、成本與價格');return;}
+  DATA.NQ={shares:shares,cost:cost,price:price,pnl:price*shares-cost};
+  renderNQ(); renderOpenPositions(); renderSummary();
+  await saveData();
+  var msg=document.getElementById('nq-edit-msg'); if(msg){msg.textContent='✓ 已儲存';msg.style.color='#34d399';setTimeout(function(){msg.textContent='';},3000);}
+};
 
 
 // ══ 工具函式 ══
@@ -1497,8 +1505,7 @@ let MARKET_CHANGE = null;
 let MARKET_PCT    = null;
 let TWII_PRICE = null; // 加權指數（台指期近似用）
 let TSMC_PRICE = null; // 台積電現價
-let PRICE_0050 = null;
-let NQ_PRICE = null;  // 0050 現價（全域變數，在 fetchQuotes 賦值，避免 DOM 文字片節出現 NaN）
+let PRICE_0050 = null;  // 0050 現價（全域變數，在 fetchQuotes 賦值，避免 DOM 文字片節出現 NaN）
 
 const cpnl = (t, mktPrice) => {
   const mp = mktPrice !== undefined ? mktPrice : MARKET_PRICE;
@@ -1531,7 +1538,7 @@ async function initData() {
     const snap = await getDoc(DOC_REF);
     if (snap.exists()) {
       const d = snap.data();
-      DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], NQ: d.NQ || [{batch:'00662 NQ｜長期投資',shares:3000,ed:'2026/07/29',en:115.61,fee:13}], RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
+      DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], NQ: Array.isArray(d.NQ) ? d.NQ : [{batch:'00662 NQ｜長期投資',shares:3000,ed:'2026/07/29',en:115.61,fee:13}], RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
       // 一次性搬移：若 Firebase 尚無 PL/RC/RB 但本機 localStorage 有舊紀錄，搬過去並清空本機
       try {
         if ((!DATA.PL || !DATA.PL.length)) {
@@ -1573,24 +1580,18 @@ async function initData() {
         DATA.D    = JSON.parse(JSON.stringify(DEFAULT_DATA.D));
         DATA.D_io = JSON.parse(JSON.stringify(DEFAULT_DATA.D_io));
         DATA.D_eq = JSON.parse(JSON.stringify(DEFAULT_DATA.D_eq));
-        await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C, T: DATA.T, D: DATA.D, D_io: DATA.D_io, D_eq: DATA.D_eq, PL: DATA.PL||[], RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
-      } else {
-        // 每次載入都強制寫回，確保日期格式正規化
-        try {
-          await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C||[], T: DATA.T||[], D: DATA.D||[], D_io: DATA.D_io||[], D_eq: DATA.D_eq||[], PL: DATA.PL||[], NQ: DATA.NQ||[{batch:'00662 NQ｜長期投資',shares:3000,ed:'2026/07/29',en:115.61,fee:13}], RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
-          console.log('日期已強制寫回 Firebase');
-        } catch(fixErr) { console.error('寫回失敗:', fixErr); }
+        await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C, T: DATA.T, D: DATA.D, D_io: DATA.D_io, D_eq: DATA.D_eq, PL: DATA.PL||[], NQ: Array.isArray(DATA.NQ)?DATA.NQ:[], RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
       }
     } else {
       DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
       normalizeDDates(DATA);
       await setDoc(DOC_REF, DATA);
     }
-    normalizeNQData(DATA);
+    if (!Array.isArray(DATA.NQ) || !DATA.NQ.length) DATA.NQ=[{batch:'00662 NQ｜長期投資',shares:3000,ed:'2026/07/29',en:115.61,fee:13}];
     setCloudStatus('connected', '已連線 · 即時同步中');
     _mktReady = true; // ✅ Firebase 資料已確認載入完成，大盤週期功能可以開始運作
     _isOfflineMode = false; // ✅ 確認是雲端最新資料，允許正常存檔
-    renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderAll('NQ'); renderOpenPositions(); renderSummary(); if (typeof renderMarketCycle==="function") renderMarketCycle();
+    renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderNQ(); renderOpenPositions(); renderSummary(); if (typeof renderMarketCycle==="function") renderMarketCycle();
 
     // 即時監聽（其他裝置改動時自動更新）
     onSnapshot(DOC_REF, snap => {
@@ -1598,13 +1599,12 @@ async function initData() {
         const d = snap.data();
         // 只在非本機儲存觸發時才更新（避免自己觸發自己）
         if (!isSaving) {
-          DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
-          normalizeNQData(DATA);
+          DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], NQ: Array.isArray(d.NQ) ? d.NQ : [{batch:'00662 NQ｜長期投資',shares:3000,ed:'2026/07/29',en:115.61,fee:13}], RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
           normalizeDDates(DATA);
           _rebalCapital = DATA.RC || {};
           _mktReady = true;
           _isOfflineMode = false; // ✅ 即時監聽收到伺服器最新資料，確認不是離線狀態
-          renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderAll('NQ'); renderOpenPositions(); renderPoolLog(); renderSummary(); renderRebalCapitalForm(); if (typeof renderMarketCycle==="function") renderMarketCycle();
+          renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderNQ(); renderOpenPositions(); renderPoolLog(); renderSummary(); renderRebalCapitalForm(); if (typeof renderMarketCycle==="function") renderMarketCycle();
         }
         setCloudStatus('connected', '已連線 · 即時同步中');
       }
@@ -1622,7 +1622,7 @@ async function initData() {
     }
     _mktReady = true; // 離線也算「已確認狀態」，避免卡住；但此時資料是本機備援，非雲端最新版
     _isOfflineMode = true; // ⚠️ 目前是本機備援資料，非雲端最新版，禁止存檔避免覆蓋掉雲端較新的資料
-    renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderAll('NQ'); renderOpenPositions(); renderSummary(); if (typeof renderMarketCycle==="function") renderMarketCycle();
+    renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderNQ(); renderOpenPositions(); renderSummary(); if (typeof renderMarketCycle==="function") renderMarketCycle();
   }
 }
 
@@ -1757,7 +1757,7 @@ window.doRestoreBackup = function(idx) {
     renderRebalCapitalForm();
   }
   saveData();
-  renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderAll('NQ'); renderOpenPositions(); renderSummary(); if (typeof renderMarketCycle==="function") renderMarketCycle();
+  renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderNQ(); renderOpenPositions(); renderSummary(); if (typeof renderMarketCycle==="function") renderMarketCycle();
   document.getElementById('backupModal').style.display = 'none';
 };
 
@@ -1774,7 +1774,7 @@ async function saveData() {
   isSaving = true;
   setCloudStatus('syncing', '同步中…');
   try {
-    await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C||[], T: DATA.T||[], D: DATA.D||[], D_io: DATA.D_io||[], D_eq: DATA.D_eq||[], PL: DATA.PL||[], RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
+    await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C||[], T: DATA.T||[], D: DATA.D||[], D_io: DATA.D_io||[], D_eq: DATA.D_eq||[], PL: DATA.PL||[], NQ: Array.isArray(DATA.NQ)?DATA.NQ:[], RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
     localStorage.setItem('dashboard_00631L_data', JSON.stringify(DATA));
     setCloudStatus('connected', '已連線 · 即時同步中');
     updateSyncTimestamp(true);
@@ -1803,7 +1803,7 @@ function groupData(s) {
   return uOrder.map(b => {
     const rows = map[b];
     const ts = rows.reduce((a,r) => a+r.shares, 0);
-    const mktPx = (s==='T') ? TSMC_PRICE : (s==='Y' ? PRICE_0050 : (s==='NQ' ? NQ_PRICE : MARKET_PRICE));
+    const mktPx = (s==='T') ? TSMC_PRICE : (s==='Y' ? PRICE_0050 : MARKET_PRICE);
     const tp = rows.reduce((a,r) => { const p=cpnl(r, mktPx); return a+(p||0); }, 0);
     const tf = rows.reduce((a,r) => a+r.fee, 0);
     const tc = rows.reduce((a,r) => a+r.en*r.shares, 0);
@@ -1886,7 +1886,6 @@ function txfPnl(r) {
 function renderAll(s) {
   if (s === 'C') { renderMetrics('C'); renderTableC(); return; }
   if (s === 'T') { renderMetrics('T'); renderTable('T'); return; }
-  if (s === 'NQ') { renderNQ(); return; }
   renderMetrics(s); renderTable(s);
 }
 
@@ -2135,21 +2134,18 @@ function renderMetrics(s) {
     const n = gs.length;
     const openBatches = gs.filter(g=>g.hasOpen).length;
     // 成本合計 & 均價
-    const tOpen = (DATA.T||[]).filter(r=>!r.ex);
-    const totalShares = tOpen.reduce((a,r)=>a+(Number(r.shares)||0),0);
-    const principalCost = tOpen.reduce((a,r)=>a+(Number(r.en)||0)*(Number(r.shares)||0),0);
-    const feeCost = tOpen.reduce((a,r)=>a+(Number(r.fee)||0),0);
-    const totalCost = principalCost + feeCost;
-    const avgPrice = totalShares>0 ? totalCost/totalShares : 0;
+    const totalShares = (DATA.T||[]).filter(r=>!r.ex).reduce((a,r)=>a+r.shares,0);
+    const totalCost   = (DATA.T||[]).filter(r=>!r.ex).reduce((a,r)=>a+r.en*r.shares,0);
+    const avgPrice    = totalShares>0 ? totalCost/totalShares : 0;
     document.getElementById('metrics-T').innerHTML = [
       ['批次數', n+'批', 'neu'],
       ['持倉股數', fmt(totalShares)+'股', 'neu'],
-      ['本金成本', '$'+fmt(principalCost), 'neu'],
-      ['手續費', '$'+fmt(feeCost), 'neg'],
-      ['含手續費成本', '$'+fmt(totalCost), 'neu'],
-      ['含費平均成本', '$'+avgPrice.toFixed(2), 'neu'],
+      ['成本均價', '$'+avgPrice.toFixed(1), 'neu'],
+      ['成本合計', '$'+fmt(totalCost), 'neu'],
       ['累積淨損益', '$'+fmt(lastCum), lastCum>=0?'pos':'neg'],
+      ['總手續費', '-$'+fmt(tf), 'neg'],
       ['持倉中批次', openBatches+'批', 'neu'],
+      ['明細筆數', DATA['T'].length+'筆', 'neu'],
     ].map(x=>'<div class="mc"><div class="mc-l">'+x[0]+'</div><div class="mc-v '+x[2]+'">'+x[1]+'</div></div>').join('');
   } else {
   // ══ 指標（灰K黃K）══
@@ -2216,7 +2212,7 @@ function renderMetrics(s) {
 function renderTable(s) {
   const gs = groupData(s);
   let cum=0, html='';
-  const ac = s==='G' ? '#9ca3af' : (s==='NQ' ? '#c4b5fd' : '#fbbf24');
+  const ac = s==='G' ? '#9ca3af' : '#fbbf24';
 
   if (!gs.length) {
     document.getElementById('tbody-'+s).innerHTML = '<tr><td colspan="12" style="text-align:center;padding:24px;color:#6b7280">尚無紀錄，請使用下方表單新增</td></tr>';
@@ -2249,7 +2245,7 @@ function renderTable(s) {
 
     if (isOpen) {
       g.rows.forEach((r, ri) => {
-        const _mkt = (s==='T') ? TSMC_PRICE : (s==='Y' ? PRICE_0050 : (s==='NQ' ? NQ_PRICE : MARKET_PRICE));
+        const _mkt = (s==='T') ? TSMC_PRICE : (s==='Y' ? PRICE_0050 : MARKET_PRICE);
         const rp = cpnl(r, _mkt), rr = cret(r, _mkt);
         const rc = rp!=null ? (rp>=0?'pp':'nn') : '';
         const ai = DATA[s].indexOf(r);
@@ -2417,14 +2413,6 @@ window.saveModal = async function() {
   if (xd) rec.xd = padDate(xd);
   if (!isNaN(ex)&&ex>0) rec.ex = ex;
   const s = editState.s;
-  if (s==='NQ') {
-    if (editState.mode==='edit' && editState.idx>=0) DATA.NQ[editState.idx]=rec;
-    else { DATA.NQ.push(rec); expanded.NQ[batch]=true; }
-    closeModal();
-    await saveData();
-    renderNQ(); renderOpenPositions(); renderSummary();
-    return;
-  }
   if (editState.mode==='edit'&&editState.idx>=0) DATA[s][editState.idx]=rec;
   else { DATA[s].push(rec); expanded[s][batch]=true; }
   closeModal();
@@ -2681,7 +2669,7 @@ window.toggleNotify = function() {
 };
 window.saveNotifySettings = function() {
   notifySettings.gray    = document.getElementById('tog-gray').classList.contains('on');
-  notifySettings.yellow  = false; // 預覽版停用黃K訊號
+  notifySettings.yellow  = document.getElementById('tog-yellow').classList.contains('on');
   notifySettings.tsmc    = document.getElementById('tog-tsmc').classList.contains('on');
   notifySettings.price631  = parseFloat(document.getElementById('alert631').value)||null;
   notifySettings.price0050 = parseFloat(document.getElementById('alert0050').value)||null;
@@ -2699,7 +2687,7 @@ function loadNotifySettings() {
     if (saved) {
       notifySettings = JSON.parse(saved);
       document.getElementById('tog-gray').classList.toggle('on', notifySettings.gray!==false);
-      document.getElementById('tog-yellow').classList.remove('on');
+      document.getElementById('tog-yellow').classList.toggle('on', notifySettings.yellow!==false);
       document.getElementById('tog-tsmc').classList.toggle('on', notifySettings.tsmc!==false);
       if (notifySettings.price631)  document.getElementById('alert631').value = notifySettings.price631;
       if (notifySettings.price0050) document.getElementById('alert0050').value = notifySettings.price0050;
@@ -4678,7 +4666,11 @@ function initSignalListener() {
         var nqQuote = d.prices && d.prices['00662'];
         var nqPrice = nqQuote && Number(nqQuote.price);
         if (isFinite(nqPrice) && nqPrice > 0) {
-          NQ_PRICE = nqPrice;
+          var nqBase = DATA.NQ || {shares:3000,cost:232030,price:0};
+          DATA.NQ = Object.assign({}, nqBase, {
+            price: nqPrice,
+            pnl: nqPrice * (Number(nqBase.shares)||0) - (Number(nqBase.cost)||0)
+          });
           renderNQ();
           renderOpenPositions();
           renderSummary();
@@ -4777,14 +4769,14 @@ function renderTrackingStatus(d) {
   }
 
   showStatus('tracking-status-G', gray,   '#9ca3af', '灰K');
-  showStatus('tracking-status-Y', null, '#fbbf24', '黃K');
+  showStatus('tracking-status-Y', yellow, '#fbbf24', '黃K');
 }
 
 // ── 渲染今日訊號 ──
 function renderSignalToday(d) {
   var el = document.getElementById('signal-today');
   if (!el) return;
-  var signals = (d.signals || []).filter(function(s){ return shouldShowSignal(s, d); });
+  var signals = (d.signals || []).filter(shouldShowSignal);
   var today = fmtToday();
 
   var todaySignals = signals.filter(function(s) { return s.date === today || !s.date; });
@@ -4816,7 +4808,6 @@ function renderSignalToday(d) {
       + '</tr></thead><tbody>';
     checkKeys.forEach(function(sym) {
       var c = checkData[sym];
-      if (c && ((c.strategy||'').indexOf('黃K') >= 0 || c.yellowK_trigger)) return;
       var stratLabel = c.strategy || sym;
       var isGray = stratLabel.indexOf('灰K') >= 0 || sym === '00631L';
       var stratColor = isGray ? '#9ca3af' : '#fbbf24';
@@ -4905,77 +4896,31 @@ function renderSignalHistory() {
 
 // ── 推播通知 ──
 var _notifiedSignals = new Set();
-try {
-  var _savedNotifyKeys = JSON.parse(localStorage.getItem('signalNotifiedKeys') || '[]');
-  if (Array.isArray(_savedNotifyKeys)) _savedNotifyKeys.forEach(function(k){ _notifiedSignals.add(k); });
-} catch(e) {}
-function persistNotifiedSignals() {
-  try {
-    localStorage.setItem('signalNotifiedKeys', JSON.stringify(Array.from(_notifiedSignals).slice(-200)));
-  } catch(e) {}
-}
-
-function normalizeSignalDate(v) {
-  if (!v) return '';
-  var s = String(v).trim();
-  var m = s.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
-  return m ? m[1]+'/'+String(m[2]).padStart(2,'0')+'/'+String(m[3]).padStart(2,'0') : s;
-}
-
-// 取得該策略目前資料的「最新交易日」。舊訊號（例如 2026/09/04）不再當成今天訊號。
-function getLatestSignalDate(d, strategy) {
-  if (!d) return fmtToday();
-  var sym = strategy === 'G' ? '00631L' : '0050';
-  var kd = d.klineDate;
-  var v = kd && kd[sym];
-  if (!v) v = d.updatedAt;
-  var n = normalizeSignalDate(v);
-  return n || fmtToday();
-}
-
-function isLatestSignal(s, d) {
-  if (!s) return false;
-  // 即時訊號只允許「今天」的訊號；Firebase/Worker 若殘留舊日期（例如 2026/09/04），一律禁止彈窗、通知與今日訊號顯示。
-  if (!s.date) return false;
-  var signalDate = normalizeSignalDate(s.date);
-  var todayDate = normalizeSignalDate(fmtToday());
-  return signalDate === todayDate;
-}
-
 // 判斷某策略(G=灰K/00631L, Y=黃K/0050)目前是否有實際未平倉部位
 function hasOpenPosition(key) {
   return (DATA[key] || []).some(function(r) { return !r.ex; });
 }
 
-// 已持倉 → 只追蹤出場；未持倉 → 只追蹤進場；舊日期訊號一律不再視為即時訊號
-function shouldShowSignal(s, d) {
-  if (!s) return false;
+// 已持倉 → 只追蹤出場訊號（進場/觀察訊號不再顯示，因為已經進場了不需要）
+// 未持倉 → 只追蹤進場訊號（出場訊號不需要，因為根本沒有部位可以出場）
+function shouldShowSignal(s) {
+  if (!s) return true;
   var key = s.strategy;
-  if (key !== 'G' && key !== 'Y') return false;
-  if (d && !isLatestSignal(s, d)) return false;
+  if (key !== 'G' && key !== 'Y') return true; // 無法判斷策略歸屬時，保守起見照常顯示
   var holding = hasOpenPosition(key);
-  if (s.type === 'EXIT') return holding;
-  if (s.type === 'ENTRY') return !holding;
-  return false;
+  if (s.type === 'EXIT') return holding;                      // 出場訊號：只有真的有持倉才顯示
+  if (s.type === 'ENTRY' || s.type === 'WATCH') return !holding; // 進場/觀察訊號：只有還沒持倉才顯示
+  return true; // 其他未知類型，照常顯示
 }
 
 function checkAndPushNotify(d) {
-  var signals = (d.signals || []).filter(function(s){ return shouldShowSignal(s, d); });
-  if (!signals.length) return;
-  // 同一天、同一訊號只保留一筆，避免刷新時重複跳出
-  var seen = new Set();
-  signals = signals.filter(function(s){
-    var key = (s.date||'') + '_' + (s.signal||'');
-    if (seen.has(key) || _notifiedSignals.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  var signals = (d.signals || []).filter(shouldShowSignal);
   if (!signals.length) return;
   addSignalHistory(signals);
   signals.forEach(function(s) {
     var key = (s.date||'') + '_' + (s.signal||'');
+    if (_notifiedSignals.has(key)) return;
     _notifiedSignals.add(key);
-    persistNotifiedSignals();
     showSignalToast(s);
     sendSignalNotification(s);
   });
