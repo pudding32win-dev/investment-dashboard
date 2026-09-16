@@ -1108,6 +1108,22 @@ canvas.d-chart { width:100%; display:block; }
       </div>
     </div>
   </div>
+  <div class="card" id="nq-add-card">
+    <div class="card-hd">➕ 新增 00662 NQ 買進</div>
+    <div class="card-bd">
+      <div class="form-grid">
+        <div class="fg"><label>批次名稱</label><input id="NQ-batch" placeholder="00662 NQ1"></div>
+        <div class="fg"><label>股數</label><input id="NQ-shares" type="number" min="1" step="1" placeholder="1000"></div>
+        <div class="fg"><label>進場日期</label><input id="NQ-ed" placeholder="2026/9/16"></div>
+        <div class="fg"><label>進場價</label><input id="NQ-en" type="number" min="0" step="0.01" placeholder="39.07"></div>
+        <div class="fg"><label>手續費（元）</label><input id="NQ-fee" type="number" min="0" step="1" placeholder="0"></div>
+      </div>
+      <div class="submit-wrap">
+        <button class="sbtn" style="background:rgba(196,181,253,.12);border:1px solid rgba(196,181,253,.35);color:#c4b5fd" onclick="addNQTrade()">新增這筆</button>
+        <span class="form-msg" id="msg-NQ"></span>
+      </div>
+    </div>
+  </div>
   <div class="card">
     <div class="card-hd">📌 00662 使用方式</div>
     <div class="card-bd" style="font-size:12px;color:var(--muted2);line-height:1.9">
@@ -1212,6 +1228,8 @@ const db  = getFirestore(app);
 const DOC_REF = doc(db, 'dashboard', '00631L');
 
 // ── 預設資料 ──
+const DEFAULT_NQ = {shares:3000,cost:232030,price:39.0723333333,pnl:-114813,trades:[]};
+
 const DEFAULT_DATA = {
   C: [
     {seq:1,dir:'B',lots:1,ed:'2025/12/29',en:28960,xd:'2026/1/7', ex:30029,pts:1069,fee:201},
@@ -1431,8 +1449,11 @@ if (!canEdit) document.body.classList.add('readonly');
 
 // ══ 00662 NQ 長期投資編輯 ══
 function getNQData() {
-  var q = (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : {shares:3000,cost:232030,price:39.0723333333,pnl:-114813};
+  var q = (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : Object.assign({}, DEFAULT_NQ);
   q.shares = Number(q.shares)||0; q.cost = Number(q.cost)||0; q.price = Number(q.price)||0;
+  if (!Array.isArray(q.trades)) q.trades = [];
+  q.pnl = q.price*q.shares-q.cost;
+  DATA.NQ = q;
   return q;
 }
 function renderNQ() {
@@ -1458,6 +1479,30 @@ window.saveNQEdit=async function(){
   renderNQ(); renderOpenPositions(); renderSummary();
   await saveData();
   var msg=document.getElementById('nq-edit-msg'); if(msg){msg.textContent='✓ 已儲存';msg.style.color='#34d399';setTimeout(function(){msg.textContent='';},3000);}
+};
+
+
+window.addNQTrade=async function(){
+  if(!canEdit){alert('⛔ 唯讀模式');return;}
+  var batch=(document.getElementById('NQ-batch').value||'').trim();
+  var shares=parseInt(document.getElementById('NQ-shares').value);
+  var ed=(document.getElementById('NQ-ed').value||'').trim();
+  var en=parseFloat(document.getElementById('NQ-en').value);
+  var fee=parseFloat(document.getElementById('NQ-fee').value)||0;
+  if(!batch||!isFinite(shares)||shares<=0||!ed||!isFinite(en)||en<0||fee<0){
+    alert('請輸入批次名稱、股數、日期、進場價與正確手續費'); return;
+  }
+  var q=getNQData();
+  q.trades.push({batch:batch,shares:shares,ed:normalizeDate(ed),en:en,fee:fee});
+  q.shares += shares;
+  q.cost += shares*en + fee;
+  q.pnl = q.price*q.shares-q.cost;
+  DATA.NQ=q;
+  ['NQ-batch','NQ-shares','NQ-ed','NQ-en','NQ-fee'].forEach(function(id){document.getElementById(id).value='';});
+  renderNQ(); renderOpenPositions(); renderSummary();
+  await saveData();
+  var msg=document.getElementById('msg-NQ');
+  if(msg){msg.textContent='✓ 已新增【'+batch+'】';msg.style.color='#34d399';setTimeout(function(){msg.textContent='';},3000);}
 };
 
 
@@ -1538,7 +1583,7 @@ async function initData() {
     const snap = await getDoc(DOC_REF);
     if (snap.exists()) {
       const d = snap.data();
-      DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : {shares:3000,cost:232030,price:39.0723333333,pnl:-114813}, RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
+      DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : Object.assign({}, DEFAULT_NQ), RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
       // 一次性搬移：若 Firebase 尚無 PL/RC/RB 但本機 localStorage 有舊紀錄，搬過去並清空本機
       try {
         if ((!DATA.PL || !DATA.PL.length)) {
@@ -1580,14 +1625,14 @@ async function initData() {
         DATA.D    = JSON.parse(JSON.stringify(DEFAULT_DATA.D));
         DATA.D_io = JSON.parse(JSON.stringify(DEFAULT_DATA.D_io));
         DATA.D_eq = JSON.parse(JSON.stringify(DEFAULT_DATA.D_eq));
-        await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C, T: DATA.T, D: DATA.D, D_io: DATA.D_io, D_eq: DATA.D_eq, PL: DATA.PL||[], NQ: Array.isArray(DATA.NQ)?DATA.NQ:[], RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
+        await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C, T: DATA.T, D: DATA.D, D_io: DATA.D_io, D_eq: DATA.D_eq, PL: DATA.PL||[], NQ: (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : Object.assign({}, DEFAULT_NQ), RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
       }
     } else {
       DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
       normalizeDDates(DATA);
       await setDoc(DOC_REF, DATA);
     }
-    if (!DATA.NQ || Array.isArray(DATA.NQ)) DATA.NQ={shares:3000,cost:232030,price:39.0723333333,pnl:-114813};
+    if (!DATA.NQ || Array.isArray(DATA.NQ)) DATA.NQ=Object.assign({}, DEFAULT_NQ); getNQData();
     setCloudStatus('connected', '已連線 · 即時同步中');
     _mktReady = true; // ✅ Firebase 資料已確認載入完成，大盤週期功能可以開始運作
     _isOfflineMode = false; // ✅ 確認是雲端最新資料，允許正常存檔
@@ -1599,7 +1644,7 @@ async function initData() {
         const d = snap.data();
         // 只在非本機儲存觸發時才更新（避免自己觸發自己）
         if (!isSaving) {
-          DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : {shares:3000,cost:232030,price:39.0723333333,pnl:-114813}, RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
+          DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : Object.assign({}, DEFAULT_NQ), RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
           normalizeDDates(DATA);
           _rebalCapital = DATA.RC || {};
           _mktReady = true;
@@ -1774,7 +1819,7 @@ async function saveData() {
   isSaving = true;
   setCloudStatus('syncing', '同步中…');
   try {
-    await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C||[], T: DATA.T||[], D: DATA.D||[], D_io: DATA.D_io||[], D_eq: DATA.D_eq||[], PL: DATA.PL||[], NQ: Array.isArray(DATA.NQ)?DATA.NQ:[], RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
+    await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C||[], T: DATA.T||[], D: DATA.D||[], D_io: DATA.D_io||[], D_eq: DATA.D_eq||[], PL: DATA.PL||[], NQ: (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : Object.assign({}, DEFAULT_NQ), RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
     localStorage.setItem('dashboard_00631L_data', JSON.stringify(DATA));
     setCloudStatus('connected', '已連線 · 即時同步中');
     updateSyncTimestamp(true);
@@ -2789,6 +2834,7 @@ function renderOpenPositions() {
     rows.push({
       name:st.name, pos:shares.toLocaleString()+' '+st.unit+'（'+open.length+'筆）',
       cost:cost,
+      avgCost:avgCost,
       price:st.price ? st.priceLabel+' '+Number(st.price).toLocaleString() : '—',
       pnl:pnl, ret:ret
     });
@@ -3003,7 +3049,7 @@ function renderSummary() {
 
   var contribEl = document.getElementById('strategy-contrib-body');
   if (contribEl) contribEl.innerHTML = contribRows;
-  var allocNames={C:'🔵 楚策略',G:'⬜ 灰K',Y:'🟡 黃K',T:'🟢 台積電',NQ:'🟣 00662 NQ'};
+  var allocNames={C:'🔵 楚策略',G:'⬜ 灰K',Y:'🟡 黃K',T:'🟢 台積電'};
   var allocationEl = document.getElementById('allocation-block');
   if (allocationEl) allocationEl.innerHTML = strategies.map(function(st){
     var pct=totalCap>0?st.capital/totalCap*100:0;
@@ -4544,18 +4590,17 @@ function renderOverviewBlocksSafe() {
       {name:'🔵 楚策略（台指期）', key:'C'},
       {name:'⬜ 灰K策略', key:'G'},
       {name:'🟡 黃K策略', key:'Y'},
-      {name:'🟢 長期投資', key:'T'},
-      {name:'🟣 00662 NQ', key:'NQ'}
+      {name:'🟢 長期投資', key:'T'}
     ];
     var totalCap = 0;
-    strategies.forEach(function(st){ totalCap += st.key==='NQ' ? Number(getNQData().cost)||0 : (Number(CAPITAL[st.key]) || 0); });
+    strategies.forEach(function(st){ totalCap += Number(CAPITAL[st.key]) || 0; });
 
     // 資金配置：這一塊只依基準／再平衡後資金計算，不依賴交易損益。
     var alloc = document.getElementById('allocation-block');
     if (alloc) {
       var allocNames={C:'🔵 楚策略',G:'⬜ 灰K',Y:'🟡 黃K',T:'🟢 台積電'};
       alloc.innerHTML = strategies.map(function(st){
-        var c=st.key==='NQ'?Number(getNQData().cost)||0:Number(CAPITAL[st.key])||0;
+        var c=Number(CAPITAL[st.key])||0;
         var pct=totalCap>0?c/totalCap*100:0;
         return '<div style=\"display:flex;align-items:center;gap:10px;margin:8px 0\">'
           +'<div style=\"width:88px;font-size:11px;font-weight:700;flex-shrink:0\">'+allocNames[st.key]+'</div>'
@@ -4587,10 +4632,6 @@ function renderOverviewBlocksSafe() {
               if(gm[gid].every(function(r){return !!r.ex;})) realized += gp-gf;
             });
             (DATA.C||[]).forEach(function(r){if(!r.ex){var p=txfPnl(r);if(p!==null&&isFinite(p))floating += p-(Number(r.fee)||0);}});
-          } else if (st.key==='NQ') {
-            var nq=getNQData();
-            realized=0;
-            floating=(Number(nq.price)||0)*(Number(nq.shares)||0)-(Number(nq.cost)||0);
           } else {
             var px=st.key==='T'?TSMC_PRICE:(st.key==='Y'?PRICE_0050:MARKET_PRICE);
             (DATA[st.key]||[]).forEach(function(r){
@@ -4671,7 +4712,7 @@ function initSignalListener() {
         var nqQuote = d.prices && d.prices['00662'];
         var nqPrice = nqQuote && Number(nqQuote.price);
         if (isFinite(nqPrice) && nqPrice > 0) {
-          var nqBase = DATA.NQ || {shares:3000,cost:232030,price:0};
+          var nqBase = (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : Object.assign({}, DEFAULT_NQ);
           DATA.NQ = Object.assign({}, nqBase, {
             price: nqPrice,
             pnl: nqPrice * (Number(nqBase.shares)||0) - (Number(nqBase.cost)||0)
