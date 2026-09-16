@@ -1031,6 +1031,49 @@ canvas.d-chart { width:100%; display:block; }
     <div style="font-size:11px;color:var(--muted);margin:0 0 6px 2px;font-weight:700">🟢 2330 台積電</div>
     <div class="metrics" id="metrics-T"></div>
   </div>
+
+  <!-- ── 00662 NQ 長期投資：與 2330 同屬「長期投資」，但帳務獨立 ── -->
+  <div style="padding:10px 0 2px">
+    <div style="font-size:11px;color:var(--muted);margin:0 0 6px 2px;font-weight:700">🟣 00662 NQ</div>
+    <div class="metrics" id="metrics-NQ-T"></div>
+  </div>
+  <div class="card" style="margin-top:8px">
+    <div class="card-hd" style="display:flex;align-items:center;justify-content:space-between">
+      <span>📌 00662 NQ｜長期投資</span>
+      <button id="btn-edit-nq-t" onclick="openNQEditT()" style="display:none;padding:5px 10px;border-radius:6px;border:1px solid rgba(196,181,253,.45);background:rgba(196,181,253,.10);color:#c4b5fd;font-size:11px;cursor:pointer">✏️ 編輯 00662</button>
+    </div>
+    <div class="card-bd">
+      <div id="nq-info-t" style="font-size:11px;color:var(--muted2);line-height:1.7"></div>
+      <div id="nq-edit-box-t" style="display:none;margin-top:10px;border:1px solid rgba(196,181,253,.35);border-radius:8px;padding:10px">
+        <div style="display:grid;gap:9px">
+          <label style="font-size:11px;color:var(--muted)">持有股數<input id="nqSharesT" type="number" min="0" step="1" style="width:100%;margin-top:4px;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text)"></label>
+          <label style="font-size:11px;color:var(--muted)">持倉成本<input id="nqCostT" type="number" min="0" step="1" style="width:100%;margin-top:4px;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text)"></label>
+          <label style="font-size:11px;color:var(--muted)">目前價格<input id="nqPriceT" type="number" min="0" step="0.01" style="width:100%;margin-top:4px;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text)"></label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button onclick="saveNQEditT()" style="padding:8px 14px;border-radius:6px;border:1px solid rgba(52,211,153,.4);background:rgba(52,211,153,.10);color:#34d399;font-weight:700;cursor:pointer">💾 儲存 00662</button>
+            <button onclick="closeNQEditT()" style="padding:8px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">取消</button>
+            <span id="nq-edit-msg-t" class="form-msg"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:8px">
+    <div class="card-hd">➕ 新增 00662 NQ 買進</div>
+    <div class="card-bd">
+      <div class="form-grid">
+        <div class="fg"><label>批次名稱</label><input id="NQ-batch-T" placeholder="00662 NQ1"></div>
+        <div class="fg"><label>股數</label><input id="NQ-shares-T" type="number" min="1" step="1" placeholder="1000"></div>
+        <div class="fg"><label>進場日期</label><input id="NQ-ed-T" placeholder="2026/9/16"></div>
+        <div class="fg"><label>進場價</label><input id="NQ-en-T" type="number" min="0" step="0.01" placeholder="39.07"></div>
+        <div class="fg"><label>手續費（元）</label><input id="NQ-fee-T" type="number" min="0" step="1" placeholder="0"></div>
+      </div>
+      <div class="submit-wrap">
+        <button class="sbtn" style="background:rgba(196,181,253,.12);border:1px solid rgba(196,181,253,.35);color:#c4b5fd" onclick="addNQTradeT()">新增這筆</button>
+        <span class="form-msg" id="msg-NQ-T"></span>
+      </div>
+    </div>
+  </div>
   <div style="margin:14px 0 8px;font-size:12px;font-weight:800;color:var(--green)">📊 2330 台積電｜交易批次紀錄</div>
   <div class="card">
     <div class="card-hd" style="display:flex;align-items:center;gap:8px">📋 台積電 2330 批次紀錄 <span style="font-size:11px;color:var(--muted);font-weight:400">▶ 展開明細</span></div>
@@ -1468,6 +1511,7 @@ function renderNQ() {
   var info=document.getElementById('nq-info');
   if(info) info.innerHTML='<b style="color:#c4b5fd">00662 NQ 長期投資</b><br>目前持有 <b style="color:var(--text)">'+fmt(q.shares)+' 股</b>，帳務成本 <b style="color:var(--text)">$'+fmt(q.cost)+'</b>，目前價格 <b style="color:var(--text)">$'+q.price.toFixed(2)+'</b>，未兌現損益 <b class="'+(pnl>=0?'pp':'nn')+'">'+(pnl>=0?'+':'-')+'$'+fmt(Math.abs(pnl))+'</b>。此部位獨立於台積電 2330 交易紀錄。';
   var b=document.getElementById('btn-edit-nq'); if(b) b.style.display=canEdit?'inline-block':'none';
+  if (typeof renderNQMainT === 'function') renderNQMainT();
 }
 window.openNQEdit=function(){ if(!canEdit)return; var q=getNQData(); document.getElementById('nqShares').value=q.shares; document.getElementById('nqCost').value=q.cost; document.getElementById('nqPrice').value=q.price; document.getElementById('nq-edit-box').style.display='block'; };
 window.closeNQEdit=function(){ var e=document.getElementById('nq-edit-box'); if(e)e.style.display='none'; };
@@ -1475,7 +1519,9 @@ window.saveNQEdit=async function(){
   if(!canEdit){alert('⛔ 唯讀模式');return;}
   var shares=parseInt(document.getElementById('nqShares').value), cost=parseFloat(document.getElementById('nqCost').value), price=parseFloat(document.getElementById('nqPrice').value);
   if(!isFinite(shares)||shares<0||!isFinite(cost)||cost<0||!isFinite(price)||price<0){alert('請輸入正確的股數、成本與價格');return;}
-  DATA.NQ={shares:shares,cost:cost,price:price,pnl:price*shares-cost};
+  // FIX: 編輯股數/成本/價格時保留既有 trades，避免編輯一次就把新增紀錄清空。
+  var oldNQ=getNQData();
+  DATA.NQ={shares:shares,cost:cost,price:price,pnl:price*shares-cost,trades:Array.isArray(oldNQ.trades)?oldNQ.trades:[]};
   renderNQ(); renderOpenPositions(); renderSummary();
   await saveData();
   var msg=document.getElementById('nq-edit-msg'); if(msg){msg.textContent='✓ 已儲存';msg.style.color='#34d399';setTimeout(function(){msg.textContent='';},3000);}
@@ -1503,6 +1549,42 @@ window.addNQTrade=async function(){
   await saveData();
   var msg=document.getElementById('msg-NQ');
   if(msg){msg.textContent='✓ 已新增【'+batch+'】';msg.style.color='#34d399';setTimeout(function(){msg.textContent='';},3000);}
+};
+
+
+// ══ 00662 NQ：長期投資主頁同步編輯/新增 ══
+function renderNQMainT(){
+  var q=getNQData(), avg=q.shares>0?q.cost/q.shares:0, pnl=q.price*q.shares-q.cost, ret=q.cost>0?pnl/q.cost*100:0;
+  var m=document.getElementById('metrics-NQ-T');
+  if(m) m.innerHTML='<div class="metric"><div class="metric-label">持有股數</div><div class="metric-val">'+fmt(q.shares)+' 股</div></div>' +
+    '<div class="metric"><div class="metric-label">持倉成本</div><div class="metric-val">$'+fmt(q.cost)+'</div></div>' +
+    '<div class="metric"><div class="metric-label">平均成本</div><div class="metric-val">$'+avg.toFixed(2)+'</div></div>' +
+    '<div class="metric"><div class="metric-label">目前價格</div><div class="metric-val">$'+q.price.toFixed(2)+'</div></div>' +
+    '<div class="metric"><div class="metric-label">未兌現損益</div><div class="metric-val '+(pnl>=0?'pp':'nn')+'">'+(pnl>=0?'+':'-')+'$'+fmt(Math.abs(pnl))+'</div></div>' +
+    '<div class="metric"><div class="metric-label">報酬率</div><div class="metric-val '+(ret>=0?'pp':'nn')+'">'+(ret>=0?'+':'')+ret.toFixed(1)+'%</div></div>';
+  var info=document.getElementById('nq-info-t');
+  if(info) info.innerHTML='00662 NQ：持有 <b style="color:var(--text)">'+fmt(q.shares)+' 股</b>，成本 <b style="color:var(--text)">$'+fmt(q.cost)+'</b>，平均成本 <b style="color:var(--text)">$'+avg.toFixed(2)+'</b>，目前價格 <b style="color:var(--text)">$'+q.price.toFixed(2)+'</b>，未兌現損益 <b class="'+(pnl>=0?'pp':'nn')+'">'+(pnl>=0?'+':'-')+'$'+fmt(Math.abs(pnl))+'</b>。';
+  var b=document.getElementById('btn-edit-nq-t'); if(b) b.style.display=canEdit?'inline-block':'none';
+}
+window.openNQEditT=function(){ if(!canEdit)return; var q=getNQData(); document.getElementById('nqSharesT').value=q.shares; document.getElementById('nqCostT').value=q.cost; document.getElementById('nqPriceT').value=q.price; document.getElementById('nq-edit-box-t').style.display='block'; };
+window.closeNQEditT=function(){ var e=document.getElementById('nq-edit-box-t'); if(e)e.style.display='none'; };
+window.saveNQEditT=async function(){
+  if(!canEdit){alert('⛔ 唯讀模式');return;}
+  var shares=parseInt(document.getElementById('nqSharesT').value), cost=parseFloat(document.getElementById('nqCostT').value), price=parseFloat(document.getElementById('nqPriceT').value);
+  if(!isFinite(shares)||shares<0||!isFinite(cost)||cost<0||!isFinite(price)||price<0){alert('請輸入正確的股數、成本與價格');return;}
+  var oldNQ=getNQData();
+  DATA.NQ={shares:shares,cost:cost,price:price,pnl:price*shares-cost,trades:Array.isArray(oldNQ.trades)?oldNQ.trades:[]};
+  renderNQ(); renderNQMainT(); renderOpenPositions(); renderSummary(); await saveData();
+  var msg=document.getElementById('nq-edit-msg-t'); if(msg){msg.textContent='✓ 已儲存';msg.style.color='#34d399';setTimeout(function(){msg.textContent='';},3000);}
+};
+window.addNQTradeT=async function(){
+  if(!canEdit){alert('⛔ 唯讀模式');return;}
+  var batch=(document.getElementById('NQ-batch-T').value||'').trim(), shares=parseInt(document.getElementById('NQ-shares-T').value), ed=(document.getElementById('NQ-ed-T').value||'').trim(), en=parseFloat(document.getElementById('NQ-en-T').value), fee=parseFloat(document.getElementById('NQ-fee-T').value)||0;
+  if(!batch||!isFinite(shares)||shares<=0||!ed||!isFinite(en)||en<0||fee<0){alert('請輸入批次名稱、股數、日期、進場價與正確手續費');return;}
+  var q=getNQData(); q.trades.push({batch:batch,shares:shares,ed:normalizeDate(ed),en:en,fee:fee}); q.shares+=shares; q.cost+=shares*en+fee; q.pnl=q.price*q.shares-q.cost; DATA.NQ=q;
+  ['NQ-batch-T','NQ-shares-T','NQ-ed-T','NQ-en-T','NQ-fee-T'].forEach(function(id){document.getElementById(id).value='';});
+  renderNQ(); renderNQMainT(); renderOpenPositions(); renderSummary(); await saveData();
+  var msg=document.getElementById('msg-NQ-T'); if(msg){msg.textContent='✓ 已新增【'+batch+'】';msg.style.color='#34d399';setTimeout(function(){msg.textContent='';},3000);}
 };
 
 
@@ -2841,6 +2923,8 @@ function renderOpenPositions() {
   });
 
   // ── 長期投資：00662 NQ（獨立顯示，不混入 TSMC 交易明細）──
+  // FIX: NQ 本身就是持倉；即使 G/Y/T/C 都沒有未平倉，也必須讓總覽顯示 NQ。
+  if (nq.shares > 0 || nq.cost > 0) hasAny = true;
   totalFloat += nqLongTerm.pnl;
   rows.push(nqLongTerm);
 
