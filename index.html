@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d0f14">
 <title>策略儀表板</title>
-<!-- BUILD_VERSION: 2026-09-16-04 (出場提醒已加持倉過濾 / MKT transaction-only寫入 / DD手動編輯) -->
-<meta name="build-version" content="2026-09-16-04">
+<!-- BUILD_VERSION: 2026-09-22-01 (今日訊號日期過濾修正 / 舊訊號不再重播) -->
+<meta name="build-version" content="2026-09-22-01">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -4830,8 +4830,8 @@ function renderSignalToday(d) {
   var ck = document.getElementById('signal-last-check');
   if (ck && d.updatedAt) ck.textContent = '資料日期：' + d.updatedAt + (d.status==='ok'?' &#x2713;':' &#x26A0;&#xFE0F;');
 
-  if (!signals.length) {
-    // 無訊號時：顯示 todayCheck 新条件核查表
+  if (!todaySignals.length) {
+    // 今天沒有訊號時：顯示 todayCheck 今日條件核查表
     var checkData = d.todayCheck || {};
     var checkKeys = Object.keys(checkData);
     var headerHtml = '<div style="margin-bottom:8px;font-size:12px;font-weight:600;color:var(--muted2)">🔍 今日條件核查</div>';
@@ -4879,7 +4879,8 @@ function renderSignalToday(d) {
     return;
   }
 
-  el.innerHTML = signals.map(function(s) {
+  // 重要：這裡只能顯示今天的訊號，不能把 Firebase 裡的歷史訊號重新當成今日訊號。
+  el.innerHTML = todaySignals.map(function(s) {
     var isEntry = s.type === 'ENTRY';
     var cls = isEntry ? 'sig-hist-entry' : 'sig-hist-exit';
     var actionColor = isEntry ? '#10b981' : '#ef4444';
@@ -4959,7 +4960,11 @@ function shouldShowSignal(s) {
 }
 
 function checkAndPushNotify(d) {
-  var signals = (d.signals || []).filter(shouldShowSignal);
+  var today = fmtToday();
+  // 推播也只處理今天的訊號，避免舊 EXIT/ENTRY 在重新整理頁面時再次跳出。
+  var signals = (d.signals || []).filter(shouldShowSignal).filter(function(s) {
+    return s && (s.date === today || !s.date);
+  });
   if (!signals.length) return;
   addSignalHistory(signals);
   signals.forEach(function(s) {
