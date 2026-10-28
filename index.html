@@ -350,8 +350,13 @@ body.readonly .readonly-badge { display:inline-block; }
   animation:slideUp 0.3s ease;
 }
 @keyframes slideUp{from{transform:translateX(-50%) translateY(20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
-.signal-toast-entry { background:#0d1f14; border:1px solid rgba(52,211,153,0.5); }
-.signal-toast-exit  { background:#1f0d0d; border:1px solid rgba(248,113,113,0.5); }
+.signal-toast-watch { background:#fff7d6; border:2px solid #facc15; }
+.signal-toast-entry { background:#0d1f14; border:2px solid #10b981; }
+.signal-toast-exit  { background:#1f0d0d; border:2px solid #ef4444; }
+.signal-toast-watch .signal-toast-title { color:#92400e; font-weight:800; }
+.signal-toast-watch .signal-toast-bd { color:#78350f; }
+.signal-toast-entry .signal-toast-title, .signal-toast-entry .signal-toast-bd { color:#34d399; font-weight:800; }
+.signal-toast-exit .signal-toast-title, .signal-toast-exit .signal-toast-bd { color:#f87171; font-weight:800; }
 .signal-toast-hd {
   padding:12px 16px 8px;
   display:flex; align-items:center; justify-content:space-between;
@@ -438,8 +443,13 @@ body.light .topbar { background:#ffffff; border-bottom-color:rgba(0,0,0,0.1); }
 body.light .tabs-wrap { background:#f5f6fa; }
 body.light .fg input,body.light .price-alert-input { background:#f0f1f5; color:#1a1d26; }
 body.light .modal-box { background:#ffffff; }
-body.light .signal-toast-entry { background:#ecfdf5; }
-body.light .signal-toast-exit  { background:#fef2f2; }
+body.light .signal-toast-watch { background:#fffbeb; border-color:#fbbf24; }
+body.light .signal-toast-watch .signal-toast-title { color:#92400e; }
+body.light .signal-toast-watch .signal-toast-bd { color:#78350f; }
+body.light .signal-toast-entry { background:#ecfdf5; border-color:#10b981; }
+body.light .signal-toast-entry .signal-toast-title, body.light .signal-toast-entry .signal-toast-bd { color:#047857; font-weight:800; }
+body.light .signal-toast-exit  { background:#fef2f2; border-color:#ef4444; }
+body.light .signal-toast-exit .signal-toast-title, body.light .signal-toast-exit .signal-toast-bd { color:#b91c1c; font-weight:800; }
 body.light select { background:#f0f1f5; color:#1a1d26; border:1px solid rgba(0,0,0,0.14); border-radius:8px; padding:9px 11px; font-size:13px; outline:none; width:100%; }
 
 /* ── 主題切換按鈕 ── */
@@ -5003,14 +5013,17 @@ function processToastQueue() {
   _toastShowing = true;
   var s = _toastQueue.shift();
   var isEntry = s.type === 'ENTRY';
+  var isExit  = s.type === 'EXIT';
+  var isWatch = s.type === 'WATCH';
   var isInfo  = s.type === 'INFO';
-  var cls = isEntry ? 'signal-toast-entry' : (isInfo ? '' : 'signal-toast-exit');
-  var borderColor = isEntry ? 'rgba(52,211,153,0.5)' : (isInfo ? 'rgba(96,165,250,0.4)' : 'rgba(248,113,113,0.5)');
-  var bgColor     = isEntry ? '#0d1f14' : (isInfo ? '#0d1220' : '#1f0d0d');
+  // 依訊號類型設定真正的彈出框背景，避免 WATCH 被當成 EXIT 顯示紅色。
+  var cls = isEntry ? 'signal-toast-entry' : (isExit ? 'signal-toast-exit' : (isWatch ? 'signal-toast-watch' : ''));
+  var borderColor = isEntry ? '#10b981' : (isExit ? '#ef4444' : (isWatch ? '#facc15' : 'rgba(96,165,250,0.4)'));
+  var bgColor     = isEntry ? '#0d1f14' : (isExit ? '#1f0d0d' : (isWatch ? '#fff7d6' : '#0d1220'));
 
   var el = document.createElement('div');
   el.className = 'signal-toast ' + cls;
-  el.style.cssText += 'background:'+bgColor+';border:1px solid '+borderColor+';';
+  el.style.cssText += 'background:'+bgColor+';border:2px solid '+borderColor+';';
   el.innerHTML = '<div class="signal-toast-hd">'
     + '<span class="signal-toast-title">' + (s.signal||'訊號') + '</span>'
     + '<span class="signal-toast-close" onclick="this.closest(&quot;.signal-toast&quot;).remove();processToastQueue()">&#x2715;</span>'
