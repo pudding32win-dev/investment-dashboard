@@ -488,6 +488,30 @@ canvas.d-chart { width:100%; display:block; }
 .filter-bar select,.filter-bar input { font-size:11px; padding:5px 8px; border-radius:6px; background:var(--bg2); border:1px solid var(--border2); color:var(--text); font-family:var(--font); outline:none; }
 .filter-bar label { font-size:11px; color:var(--muted); }
 .filter-clear { font-size:11px; padding:5px 10px; border-radius:6px; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.25); color:var(--red); cursor:pointer; }
+
+/* ── 資產管理模組 ── */
+.stab.on-fund{color:#34d399;border-bottom-color:#34d399;}
+.am-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px;}
+.am-field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;}
+.am-input{width:100%;min-width:0;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 11px;color:var(--text);font-family:var(--font);font-size:12px;outline:none;}
+.am-input:focus{border-color:rgba(245,158,11,.55);}
+.am-field-action{display:flex;flex-direction:column;justify-content:flex-end;}
+.am-field-wide{grid-column:span 2;}
+.am-note{font-size:11px;line-height:1.65;color:var(--muted2);margin-top:9px;}
+.am-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.am-table{width:100%;border-collapse:collapse;font-size:12px;min-width:500px;}
+.am-table th,.am-table td{padding:8px 7px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle;}
+.am-table th{font-size:10px;color:var(--muted);font-weight:500;}
+.am-table td input{max-width:100%;}
+.am-amount{font-family:monospace;font-weight:700;white-space:nowrap;}
+.am-flow-tag{display:inline-block;border:1px solid var(--border2);border-radius:5px;padding:2px 6px;font-size:10px;color:var(--muted2);}
+.am-details-summary{cursor:pointer;padding:14px;font-size:13px;font-weight:600;color:var(--muted2);list-style:none;}
+.am-details-summary::-webkit-details-marker{display:none;}
+.am-details-summary:after{content:'＋';float:right;color:var(--muted);}
+details[open]>.am-details-summary:after{content:'－';}
+body.readonly .am-edit-only{display:none!important;}
+@media(max-width:540px){.am-field-wide{grid-column:span 1;}.am-form-grid{grid-template-columns:1fr 1fr;}.am-field-action{grid-column:1/-1;}.am-input{font-size:12px;padding:8px;}}
+
 </style>
 </head>
 <body>
@@ -689,7 +713,7 @@ canvas.d-chart { width:100%; display:block; }
 <!-- ── 策略分頁 ── -->
 <div class="tabs-wrap">
   <button class="stab on-home" id="sw-H" onclick="switchPanel('H')">🏠 總覽</button>
-  <button class="stab"         id="sw-F" onclick="switchPanel('F')">💰 資金配置</button>
+  <button class="stab"         id="sw-F" onclick="switchPanel('F')">🏦 資產管理</button>
   <button class="stab"           id="sw-G" onclick="switchPanel('G')">⬜ 灰K策略</button>
   <button class="stab"           id="sw-Y" onclick="switchPanel('Y')">🟡 黃K策略</button>
   <button class="stab"           id="sw-C" onclick="switchPanel('C')">🔵 楚策略</button>
@@ -775,12 +799,74 @@ canvas.d-chart { width:100%; display:block; }
 
 </div><!-- /panel-H -->
 
-<!-- ══ 資金配置面板 ══ -->
+<!-- ══ 資產管理面板（沿用原 F 頁籤與資料文件）══ -->
 <div class="panel" id="panel-F">
-  <div style="padding:12px 0 6px;font-size:12px;color:var(--muted)">
-    資金調度　｜　再平衡　｜　目標設定　｜　平衡基準
+  <div style="padding:12px 0 10px;font-size:12px;color:var(--muted)">
+    資產總覽　｜　銀行餘額　｜　券商現金　｜　獲利資金流向　｜　每月資產快照
   </div>
 
+  <div class="metrics" id="am-kpis"></div>
+  <div id="am-data-warning" class="am-note" style="margin:-4px 0 12px"></div>
+
+  <div class="card">
+    <div class="card-hd">🏦 銀行帳戶餘額 <span style="font-size:10px;color:var(--muted);font-weight:400">可新增多個帳戶，餘額自行更新</span></div>
+    <div class="card-bd">
+      <div class="am-form-grid am-edit-only">
+        <div class="am-field"><label>銀行／帳戶名稱</label><input class="am-input" id="am-new-bank-name" placeholder="例如：玉山銀行－薪轉"></div>
+        <div class="am-field"><label>目前餘額（元）</label><input class="am-input" id="am-new-bank-balance" type="number" min="0" step="1" placeholder="例如：300000"></div>
+        <div class="am-field am-field-action"><label>&nbsp;</label><button class="sbtn sbtn-yellow" onclick="addBankAccount()">＋ 新增銀行帳戶</button></div>
+      </div>
+      <div id="am-bank-list"></div>
+      <div class="submit-wrap am-edit-only" style="margin-top:10px">
+        <button class="sbtn sbtn-yellow" onclick="saveBankAccounts()">💾 儲存銀行餘額</button>
+        <span class="form-msg" id="am-bank-msg"></span>
+      </div>
+      <div class="am-note">銀行餘額是手動紀錄的帳面餘額；更新後會保留目前數字與更新日期，不會回頭改寫舊的資產快照。</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">💳 券商現金／期貨帳戶權益</div>
+    <div class="card-bd">
+      <div class="am-form-grid">
+        <div class="am-field"><label>券商可用現金／期貨帳戶權益（元）</label><input class="am-input" id="am-broker-cash" type="number" min="0" step="1" placeholder="請輸入券商現金"></div>
+        <div class="am-field"><label>資料日期</label><input class="am-input" id="am-broker-date" type="date"></div>
+        <div class="am-field am-field-action am-edit-only"><label>&nbsp;</label><button class="sbtn sbtn-yellow" onclick="saveBrokerCash()">💾 儲存券商金額</button></div>
+      </div>
+      <div class="am-note">股票／ETF 部位市值由持倉與報價另外計算，因此這裡只填「可用現金」。期貨帳戶可填帳戶權益；不要填已含股票市值的券商總資產，避免重複計算。</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">🔄 獲利資金流向 <span style="font-size:10px;color:var(--muted);font-weight:400">追蹤獲利最後用途</span></div>
+    <div class="card-bd">
+      <div class="am-form-grid am-edit-only">
+        <div class="am-field"><label>日期</label><input class="am-input" id="am-flow-date" type="date"></div>
+        <div class="am-field"><label>資金來源</label><select class="am-input" id="am-flow-source"><option>投資已實現獲利</option><option>投資本金</option><option>薪資／外部收入</option><option>其他收入</option></select></div>
+        <div class="am-field"><label>資金去向</label><select class="am-input" id="am-flow-destination"><option>再投入股票／ETF</option><option>銀行存款／保留現金</option><option>生活支出</option><option>貸款／負債</option><option>帳戶間轉帳</option><option>其他用途</option></select></div>
+        <div class="am-field"><label>金額（元）</label><input class="am-input" id="am-flow-amount" type="number" min="0" step="1" placeholder="輸入正數"></div>
+        <div class="am-field am-field-wide"><label>備註</label><input class="am-input" id="am-flow-note" placeholder="例如：本月已實現獲利提領，用於生活費"></div>
+        <div class="am-field am-field-action"><label>&nbsp;</label><button class="sbtn sbtn-yellow" onclick="addCashFlow()">＋ 新增資金流向</button></div>
+      </div>
+      <div id="am-flow-summary"></div>
+      <div id="am-flow-list"></div>
+      <div class="am-note">這裡是「用途分類帳」，不會自動增減銀行或券商餘額；帳戶餘額以你輸入的實際餘額為準。帳戶間轉帳與再投入屬資產內部移動，不應當成消費支出或新增獲利。</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd" style="display:flex;align-items:center;justify-content:space-between;gap:8px">📈 每月資產快照 <button class="sbtn sbtn-yellow am-edit-only" onclick="recordAssetSnapshot()">📌 記錄本次資產</button></div>
+    <div class="card-bd">
+      <div id="am-snapshot-chart"></div>
+      <div id="am-snapshot-list"></div>
+      <div class="am-note">每次記錄會保存當下銀行餘額、券商現金、股票／ETF 市值與現金比率。圖表依你實際按下「記錄本次資產」的日期形成，不會用策略基準資金假裝成銀行現金。</div>
+    </div>
+  </div>
+
+  <details class="card" style="margin-top:16px">
+    <summary class="am-details-summary">⚙️ 進階工具｜原年度績效、再平衡與策略資金設定（保留）</summary>
+    <div style="padding:12px 14px 14px">
+      <div class="am-note" style="margin:0 0 12px">以下是原本的策略績效與資金配置工具，仍保留原有計算與資料；其中「閒置資金」是依策略基準資金估算的差額，不等於銀行實際餘額。</div>
   <!-- 年度績效（最頂部）-->
   <div class="card">
     <div class="card-hd" style="display:flex;align-items:center;justify-content:space-between">
@@ -796,7 +882,7 @@ canvas.d-chart { width:100%; display:block; }
 
   <!-- 1. 資金調度池（閒置資金）-->
   <div class="card" style="margin-top:12px">
-    <div class="card-hd">&#x26A1; 資金調度池（閒置資金）</div>
+    <div class="card-hd">&#x26A1; 策略基準資金差額估算（非銀行餘額）</div>
     <div class="card-bd"><div id="pool-block"></div></div>
   </div>
 
@@ -869,6 +955,8 @@ canvas.d-chart { width:100%; display:block; }
     <div class="card-bd"><div id="pool-log-block"></div></div>
   </div>
 
+    </div>
+  </details>
 </div><!-- /panel-F -->
 
 <!-- ══ 楚策略面板 ══ -->
@@ -1372,6 +1460,7 @@ const DEFAULT_DATA = {
   NQ: { shares:3000, cost:232030, price:39.0723333333, pnl:-114813 },
   RC: {},
   RB: null,
+  AM: { accounts: [], brokerCash: 0, brokerDate: '', cashFlows: [], snapshots: [] },
   MKT: { ath: null, athHistory: [], ddHistory: [], ddRef: null, ddTriggered: {} },
 };
 
@@ -1428,7 +1517,7 @@ function normalizeDDates(dataObj) {
   });
 }
 
-let DATA = { G:[], Y:[], C:[], T:[], D:[], D_io:[], D_eq:[], PL:[], RC:{}, RB:null, MKT:{ ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
+let DATA = { G:[], Y:[], C:[], T:[], D:[], D_io:[], D_eq:[], PL:[], RC:{}, RB:null, AM:{accounts:[],brokerCash:0,brokerDate:'',cashFlows:[],snapshots:[]}, MKT:{ ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
 let expanded = { G:{}, Y:{}, T:{} };
 let expandedC = {};
 let editState = { s:'G', idx:-1, mode:'', fixBatch:'' };
@@ -1588,7 +1677,7 @@ async function initData() {
     const snap = await getDoc(DOC_REF);
     if (snap.exists()) {
       const d = snap.data();
-      DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : Object.assign({}, DEFAULT_NQ), RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
+      DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], AM: normalizeAssetData(d.AM), NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : Object.assign({}, DEFAULT_NQ), RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
       // 一次性搬移：若 Firebase 尚無 PL/RC/RB 但本機 localStorage 有舊紀錄，搬過去並清空本機
       try {
         if ((!DATA.PL || !DATA.PL.length)) {
@@ -1630,7 +1719,7 @@ async function initData() {
         DATA.D    = JSON.parse(JSON.stringify(DEFAULT_DATA.D));
         DATA.D_io = JSON.parse(JSON.stringify(DEFAULT_DATA.D_io));
         DATA.D_eq = JSON.parse(JSON.stringify(DEFAULT_DATA.D_eq));
-        await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C, T: DATA.T, D: DATA.D, D_io: DATA.D_io, D_eq: DATA.D_eq, PL: DATA.PL||[], NQ: (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : Object.assign({}, DEFAULT_NQ), RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
+        await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C, T: DATA.T, D: DATA.D, D_io: DATA.D_io, D_eq: DATA.D_eq, PL: DATA.PL||[], AM: normalizeAssetData(DATA.AM), NQ: (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : Object.assign({}, DEFAULT_NQ), RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
       }
     } else {
       DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
@@ -1649,7 +1738,7 @@ async function initData() {
         const d = snap.data();
         // 只在非本機儲存觸發時才更新（避免自己觸發自己）
         if (!isSaving) {
-          DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : Object.assign({}, DEFAULT_NQ), RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
+          DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], AM: normalizeAssetData(d.AM), NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : Object.assign({}, DEFAULT_NQ), RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
           normalizeDDates(DATA);
           _rebalCapital = DATA.RC || {};
           _mktReady = true;
@@ -1666,6 +1755,7 @@ async function initData() {
       const saved = localStorage.getItem('dashboard_00631L_data');
       DATA = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_DATA));
       normalizeDDates(DATA);
+      DATA.AM = normalizeAssetData(DATA.AM);
     } catch(e) {
       DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
       normalizeDDates(DATA);
@@ -1798,6 +1888,7 @@ window.doRestoreBackup = function(idx) {
   if (idx < 0 || idx >= backups.length) return;
   var b = backups[idx];
   DATA = b.data;
+  DATA.AM = normalizeAssetData(DATA.AM);
   if (b.rebalBaseline !== undefined) {
     DATA.RB = b.rebalBaseline || null;
   }
@@ -1824,7 +1915,7 @@ async function saveData() {
   isSaving = true;
   setCloudStatus('syncing', '同步中…');
   try {
-    await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C||[], T: DATA.T||[], D: DATA.D||[], D_io: DATA.D_io||[], D_eq: DATA.D_eq||[], PL: DATA.PL||[], NQ: (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : Object.assign({}, DEFAULT_NQ), RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
+    await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C||[], T: DATA.T||[], D: DATA.D||[], D_io: DATA.D_io||[], D_eq: DATA.D_eq||[], PL: DATA.PL||[], AM: normalizeAssetData(DATA.AM), NQ: (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : Object.assign({}, DEFAULT_NQ), RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
     localStorage.setItem('dashboard_00631L_data', JSON.stringify(DATA));
     setCloudStatus('connected', '已連線 · 即時同步中');
     updateSyncTimestamp(true);
@@ -3175,6 +3266,7 @@ function renderSummary() {
   window._stratActual = stratActual;
   window._totalCap   = totalCap;
   renderGoal();
+  renderAssetManagement(); // 資產模組同步更新市價與餘額摘要
 }
 
 // ══ 績效圖表 ══
@@ -4372,6 +4464,286 @@ function renderPoolLog() {
   el.innerHTML = header
     + '<div style="font-size:11px;color:var(--muted2);margin-bottom:8px">最近 5 筆異動</div>'
     + rows;
+}
+
+// ══════════════════════════════════════════════
+// ⑥ 資產管理：銀行餘額、券商現金、資金流向與資產快照
+// 新資料獨立存放在 DATA.AM，不改動既有策略交易資料。
+// ══════════════════════════════════════════════
+function normalizeAssetData(value) {
+  var am = (value && typeof value === 'object' && !Array.isArray(value)) ? value : {};
+  if (!Array.isArray(am.accounts)) am.accounts = [];
+  if (!Array.isArray(am.cashFlows)) am.cashFlows = [];
+  if (!Array.isArray(am.snapshots)) am.snapshots = [];
+  am.brokerCash = Math.max(0, Number(am.brokerCash) || 0);
+  am.brokerDate = String(am.brokerDate || '');
+  return am;
+}
+function getAssetData() {
+  DATA.AM = normalizeAssetData(DATA.AM);
+  return DATA.AM;
+}
+function amTodayISO() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function amDateDisplay(value) {
+  return String(value || '').replace(/-/g, '/');
+}
+function amEscape(value) {
+  return String(value == null ? '' : value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function amMoney(value) {
+  return '$' + fmt(Math.round(Number(value) || 0));
+}
+function calcAssetOverview() {
+  var am = getAssetData();
+  var bankCash = am.accounts.reduce(function(sum, a) { return sum + Math.max(0, Number(a.balance) || 0); }, 0);
+  var brokerCash = Math.max(0, Number(am.brokerCash) || 0);
+  var holdingsMV = 0;
+  var holdingsCost = 0;
+  var missing = [];
+  var items = [
+    { key:'G', label:'00631L', price:Number(MARKET_PRICE) || 0 },
+    { key:'Y', label:'0050', price:Number(PRICE_0050) || 0 },
+    { key:'T', label:'台積電 2330', price:Number(TSMC_PRICE) || 0 }
+  ];
+  items.forEach(function(item) {
+    var shares = 0, cost = 0;
+    (DATA[item.key] || []).forEach(function(r) {
+      if (r.ex) return;
+      var q = Number(r.shares) || 0;
+      shares += q;
+      cost += (Number(r.en) || 0) * q;
+    });
+    if (shares > 0) {
+      if (item.price > 0) holdingsMV += item.price * shares;
+      else missing.push(item.label + '報價');
+      holdingsCost += cost;
+    }
+  });
+  var nq = (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : {};
+  var nqShares = Number(nq.shares) || 0;
+  var nqPrice = Number(nq.price) || 0;
+  if (nqShares > 0) {
+    if (nqPrice > 0) holdingsMV += nqShares * nqPrice;
+    else missing.push('00662報價');
+    holdingsCost += Number(nq.cost) || 0;
+  }
+  var cash = bankCash + brokerCash;
+  var total = cash + holdingsMV;
+  var complete = missing.length === 0;
+  return {
+    bankCash:bankCash, brokerCash:brokerCash, cash:cash,
+    holdingsMV:Math.round(holdingsMV), holdingsCost:Math.round(holdingsCost),
+    totalAssets:Math.round(total),
+    cashRatio:complete && total > 0 ? cash / total * 100 : null,
+    missing:missing, complete:complete
+  };
+}
+function renderAMBankList() {
+  var el = document.getElementById('am-bank-list');
+  if (!el) return;
+  if (el.contains(document.activeElement)) return; // 避免行情更新時覆蓋正在編輯的欄位
+  var accounts = getAssetData().accounts;
+  if (!accounts.length) {
+    el.innerHTML = '<div style="padding:16px 4px;text-align:center;color:var(--muted);font-size:12px">尚未新增銀行帳戶。請在上方輸入銀行名稱與目前餘額。</div>';
+    return;
+  }
+  var rows = accounts.map(function(a, i) {
+    return '<tr>'
+      + '<td><input class="am-input" id="am-bank-name-'+i+'" value="'+amEscape(a.name||'')+'" '+(canEdit?'':'readonly')+'></td>'
+      + '<td><input class="am-input" id="am-bank-balance-'+i+'" type="number" min="0" step="1" value="'+(Number(a.balance)||0)+'" '+(canEdit?'':'readonly')+' style="text-align:right;font-family:monospace"></td>'
+      + '<td style="font-size:10px;color:var(--muted2);white-space:nowrap">'+amEscape(amDateDisplay(a.updatedAt||''))+'</td>'
+      + '<td>'+(canEdit?'<button class="op op-del am-edit-only" onclick="deleteBankAccount('+i+')">刪除</button>':'')+'</td>'
+      + '</tr>';
+  }).join('');
+  el.innerHTML = '<div class="am-table-wrap"><table class="am-table"><thead><tr><th>銀行／帳戶</th><th style="text-align:right">餘額（元）</th><th>更新日期</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+window.addBankAccount = async function() {
+  if (!canEdit) { alert('唯讀模式，無法新增帳戶'); return; }
+  var nameEl = document.getElementById('am-new-bank-name');
+  var balEl = document.getElementById('am-new-bank-balance');
+  var name = nameEl ? nameEl.value.trim() : '';
+  var balance = balEl && balEl.value.trim() !== '' ? Number(balEl.value) : NaN;
+  if (!name || !isFinite(balance) || balance < 0) { alert('請輸入銀行名稱及有效的非負餘額'); return; }
+  var am = getAssetData();
+  am.accounts.unshift({id:'ba_'+Date.now()+'_'+Math.floor(Math.random()*100000), name:name, balance:balance, updatedAt:amTodayISO()});
+  if (nameEl) nameEl.value = '';
+  if (balEl) balEl.value = '';
+  renderAssetManagement();
+  await saveData();
+};
+window.saveBankAccounts = async function() {
+  if (!canEdit) { alert('唯讀模式，無法修改帳戶'); return; }
+  var am = getAssetData();
+  var next = [];
+  for (var i=0; i<am.accounts.length; i++) {
+    var nameEl = document.getElementById('am-bank-name-'+i);
+    var balEl = document.getElementById('am-bank-balance-'+i);
+    var name = nameEl ? nameEl.value.trim() : String(am.accounts[i].name || '');
+    var balance = balEl && balEl.value.trim() !== '' ? Number(balEl.value) : NaN;
+    if (!name || !isFinite(balance) || balance < 0) { alert('第 '+(i+1)+' 個帳戶名稱或餘額無效，請修正後再儲存'); return; }
+    next.push({id:am.accounts[i].id || ('ba_'+Date.now()+'_'+i), name:name, balance:balance, updatedAt:amTodayISO()});
+  }
+  am.accounts = next;
+  renderAssetManagement();
+  await saveData();
+  var msg = document.getElementById('am-bank-msg');
+  if (msg) { msg.textContent = '已儲存'; setTimeout(function(){ if(msg) msg.textContent=''; }, 2500); }
+};
+window.deleteBankAccount = async function(index) {
+  if (!canEdit) { alert('唯讀模式，無法刪除帳戶'); return; }
+  var am = getAssetData();
+  if (index < 0 || index >= am.accounts.length) return;
+  if (!confirm('確定刪除此銀行帳戶紀錄？')) return;
+  am.accounts.splice(index, 1);
+  renderAssetManagement();
+  await saveData();
+};
+window.saveBrokerCash = async function() {
+  if (!canEdit) { alert('唯讀模式，無法修改'); return; }
+  var cashEl = document.getElementById('am-broker-cash');
+  var dateEl = document.getElementById('am-broker-date');
+  var cash = cashEl && cashEl.value.trim() !== '' ? Number(cashEl.value) : NaN;
+  if (!isFinite(cash) || cash < 0) { alert('請輸入有效的券商現金／帳戶權益'); return; }
+  var am = getAssetData();
+  am.brokerCash = cash;
+  am.brokerDate = dateEl && dateEl.value ? dateEl.value : amTodayISO();
+  renderAssetManagement();
+  await saveData();
+};
+window.addCashFlow = async function() {
+  if (!canEdit) { alert('唯讀模式，無法新增紀錄'); return; }
+  var date = document.getElementById('am-flow-date').value || amTodayISO();
+  var source = document.getElementById('am-flow-source').value;
+  var destination = document.getElementById('am-flow-destination').value;
+  var amount = Number(document.getElementById('am-flow-amount').value);
+  var note = document.getElementById('am-flow-note').value.trim();
+  if (!isFinite(amount) || amount <= 0) { alert('請輸入大於 0 的金額'); return; }
+  var am = getAssetData();
+  am.cashFlows.unshift({id:'cf_'+Date.now()+'_'+Math.floor(Math.random()*100000), date:date, source:source, destination:destination, amount:amount, note:note});
+  document.getElementById('am-flow-amount').value = '';
+  document.getElementById('am-flow-note').value = '';
+  renderAssetManagement();
+  await saveData();
+};
+window.deleteCashFlow = async function(id) {
+  if (!canEdit) { alert('唯讀模式，無法刪除紀錄'); return; }
+  var am = getAssetData();
+  var idx = am.cashFlows.findIndex(function(x){ return x.id === id; });
+  if (idx < 0) return;
+  if (!confirm('確定刪除這筆資金流向紀錄？')) return;
+  am.cashFlows.splice(idx, 1);
+  renderAssetManagement();
+  await saveData();
+};
+function renderAMCashFlows() {
+  var summaryEl = document.getElementById('am-flow-summary');
+  var listEl = document.getElementById('am-flow-list');
+  if (!summaryEl || !listEl) return;
+  var flows = getAssetData().cashFlows;
+  var month = amTodayISO().slice(0,7);
+  var monthRows = flows.filter(function(x){ return String(x.date||'').slice(0,7) === month; });
+  var monthExpense = monthRows.filter(function(x){ return ['生活支出','貸款／負債','其他用途'].indexOf(x.destination) >= 0; }).reduce(function(a,x){ return a + (Number(x.amount)||0); },0);
+  var profitRows = flows.filter(function(x){ return x.source === '投資已實現獲利'; });
+  var profitTotal = profitRows.reduce(function(a,x){ return a + (Number(x.amount)||0); },0);
+  var byDest = {};
+  profitRows.forEach(function(x){ var k=x.destination||'未分類'; byDest[k]=(byDest[k]||0)+(Number(x.amount)||0); });
+  var destHtml = Object.keys(byDest).length ? Object.keys(byDest).map(function(k){ return '<div class="pool-log-row"><span>'+amEscape(k)+'</span><b class="am-amount">'+amMoney(byDest[k])+'</b></div>'; }).join('') : '<div style="font-size:11px;color:var(--muted);padding:4px 0">尚無「投資已實現獲利」去向紀錄。</div>';
+  summaryEl.innerHTML = '<div class="metrics" style="margin:4px 0 12px">'
+    + '<div class="mc"><div class="mc-l">累計已登記獲利分配</div><div class="mc-v pos">'+amMoney(profitTotal)+'</div></div>'
+    + '<div class="mc"><div class="mc-l">本月已登記實際支出</div><div class="mc-v neu">'+amMoney(monthExpense)+'</div></div>'
+    + '</div><div style="font-size:11px;color:var(--muted2);margin-bottom:6px">已登記投資獲利的去向</div>'+destHtml;
+  if (!flows.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:15px;color:var(--muted);font-size:12px">尚無資金流向紀錄</div>';
+    return;
+  }
+  var rows = flows.slice(0,10).map(function(x){
+    return '<tr><td>'+amEscape(amDateDisplay(x.date))+'</td><td>'+amEscape(x.source||'')+'</td><td>'+amEscape(x.destination||'')+'</td><td style="text-align:right" class="am-amount">'+amMoney(x.amount)+'</td><td>'+amEscape(x.note||'')+'</td><td>'+(canEdit?'<button class="op op-del" onclick="deleteCashFlow(\''+amEscape(x.id)+'\')">刪除</button>':'')+'</td></tr>';
+  }).join('');
+  listEl.innerHTML = '<div class="am-table-wrap"><table class="am-table" style="min-width:720px"><thead><tr><th>日期</th><th>來源</th><th>去向</th><th style="text-align:right">金額</th><th>備註</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="am-note">顯示最近 10 筆；完整資料保存在雲端資料欄位。</div>';
+}
+window.recordAssetSnapshot = async function() {
+  if (!canEdit) { alert('唯讀模式，無法新增快照'); return; }
+  var am = getAssetData();
+  var a = calcAssetOverview();
+  var today = amTodayISO();
+  if (!a.bankCash && !a.brokerCash && !a.holdingsMV) { alert('目前沒有可記錄的資產數字。請先輸入銀行餘額或券商現金。'); return; }
+  if (a.missing.length && !confirm('部分持倉尚未取得市價：'+a.missing.join('、')+'。這筆快照的現金比率會標示為報價未齊，仍要記錄嗎？')) return;
+  var snapshot = {
+    date:today, bankCash:a.bankCash, brokerCash:a.brokerCash,
+    holdingsMV:a.holdingsMV, totalAssets:a.totalAssets,
+    cashRatio:a.cashRatio, complete:a.complete, missing:a.missing.slice()
+  };
+  var existing = am.snapshots.findIndex(function(x){ return x.date === today; });
+  if (existing >= 0) {
+    if (!confirm('今天已經有一筆資產快照。要用目前數字更新今天的快照嗎？')) return;
+    am.snapshots[existing] = snapshot;
+  } else {
+    am.snapshots.unshift(snapshot);
+  }
+  am.snapshots.sort(function(x,y){ return String(y.date).localeCompare(String(x.date)); });
+  if (am.snapshots.length > 36) am.snapshots.length = 36;
+  renderAssetManagement();
+  await saveData();
+};
+function renderAMSnapshots() {
+  var chartEl = document.getElementById('am-snapshot-chart');
+  var listEl = document.getElementById('am-snapshot-list');
+  if (!chartEl || !listEl) return;
+  var snapshots = getAssetData().snapshots.slice().sort(function(a,b){ return String(a.date).localeCompare(String(b.date)); }).slice(-12);
+  if (!snapshots.length) {
+    chartEl.innerHTML = '<div style="padding:14px 4px;color:var(--muted);font-size:12px;text-align:center">尚無快照。更新銀行／券商金額後，按「記錄本次資產」建立第一筆。</div>';
+    listEl.innerHTML = '';
+    return;
+  }
+  if (snapshots.length >= 2) {
+    var vals = snapshots.map(function(x){ return Number(x.totalAssets)||0; });
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    if (max === min) { max += 1; min = Math.max(0,min-1); }
+    var pts = vals.map(function(v,i){ var x=24+(i*(632/(vals.length-1))); var y=112-((v-min)/(max-min))*86; return x.toFixed(1)+','+y.toFixed(1); }).join(' ');
+    var labels = snapshots.map(function(x,i){ if(i!==0 && i!==snapshots.length-1 && i%2!==0)return ''; return '<text x="'+(24+(i*(632/(snapshots.length-1)))).toFixed(1)+'" y="146" text-anchor="middle" fill="currentColor" opacity=".65" font-size="9">'+amEscape(String(x.date||'').slice(5).replace('-','/'))+'</text>'; }).join('');
+    chartEl.innerHTML = '<div style="font-size:11px;color:var(--muted2);margin-bottom:4px">最近最多 12 筆資產總額走勢</div><svg viewBox="0 0 680 156" role="img" aria-label="資產總額歷史走勢" style="width:100%;height:auto;display:block"><line x1="24" y1="112" x2="656" y2="112" stroke="currentColor" opacity=".12"/><polyline points="'+pts+'" fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+snapshots.map(function(x,i){var xx=24+(i*(632/(snapshots.length-1)));var yy=112-((Number(x.totalAssets||0)-min)/(max-min))*86;return '<circle cx="'+xx.toFixed(1)+'" cy="'+yy.toFixed(1)+'" r="3.5" fill="#34d399"/>';}).join('')+labels+'</svg>';
+  } else {
+    chartEl.innerHTML = '<div style="padding:12px 4px;color:var(--muted);font-size:12px">目前只有 1 筆快照；再記錄下次月底資產後，就會開始形成趨勢線。</div>';
+  }
+  var rows = snapshots.slice().reverse().map(function(x,i,arr){
+    var prev = arr[i+1];
+    var diff = prev ? (Number(x.totalAssets)||0) - (Number(prev.totalAssets)||0) : null;
+    var ratio = x.cashRatio == null ? '報價未齊' : Number(x.cashRatio).toFixed(1)+'%';
+    return '<tr><td>'+amEscape(amDateDisplay(x.date))+'</td><td class="am-amount">'+amMoney(x.bankCash)+'</td><td class="am-amount">'+amMoney(x.brokerCash)+'</td><td class="am-amount">'+amMoney(x.holdingsMV)+'</td><td class="am-amount">'+amMoney(x.totalAssets)+'</td><td>'+ratio+'</td><td class="am-amount" style="color:'+(diff==null?'var(--muted2)':diff>=0?'var(--gain)':'var(--loss)')+'">'+(diff==null?'—':(diff>=0?'+':'')+amMoney(diff))+'</td></tr>';
+  }).join('');
+  listEl.innerHTML = '<div class="am-table-wrap"><table class="am-table" style="min-width:720px"><thead><tr><th>日期</th><th>銀行現金</th><th>券商現金</th><th>股票／ETF市值</th><th>金融總資產</th><th>現金比</th><th>較前筆變化</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+function renderAssetManagement() {
+  var kpiEl = document.getElementById('am-kpis');
+  if (!kpiEl) return;
+  var a = calcAssetOverview();
+  var ratioText = a.cashRatio == null ? '待報價' : a.cashRatio.toFixed(1)+'%';
+  kpiEl.innerHTML = '<div class="mc"><div class="mc-l">銀行總餘額</div><div class="mc-v neu">'+amMoney(a.bankCash)+'</div></div>'
+    + '<div class="mc"><div class="mc-l">券商現金／期貨權益</div><div class="mc-v neu">'+amMoney(a.brokerCash)+'</div></div>'
+    + '<div class="mc"><div class="mc-l">股票／ETF 市值</div><div class="mc-v neu">'+amMoney(a.holdingsMV)+'</div></div>'
+    + '<div class="mc"><div class="mc-l">金融總資產（目前可計）</div><div class="mc-v pos">'+amMoney(a.totalAssets)+'</div></div>'
+    + '<div class="mc"><div class="mc-l">現金比率</div><div class="mc-v '+(a.cashRatio==null?'neu':'pos')+'">'+ratioText+'</div></div>';
+  var warning = document.getElementById('am-data-warning');
+  if (warning) {
+    warning.textContent = a.missing.length
+      ? '⚠️ 尚有持倉未取得市價：'+a.missing.join('、')+'。目前總資產與現金比率不完整，請等報價更新後再記錄快照。'
+      : '計算口徑：銀行餘額＋券商可用現金／期貨帳戶權益＋00631L、0050、台積電、00662 持倉市值。策略基準資金不當作現金。';
+    warning.style.color = a.missing.length ? '#f59e0b' : 'var(--muted2)';
+  }
+  renderAMBankList();
+  var brokerInput = document.getElementById('am-broker-cash');
+  var brokerDate = document.getElementById('am-broker-date');
+  if (brokerInput) { brokerInput.disabled = !canEdit; if (document.activeElement !== brokerInput) brokerInput.value = a.brokerCash || ''; }
+  if (brokerDate) { brokerDate.disabled = !canEdit; if (document.activeElement !== brokerDate) brokerDate.value = getAssetData().brokerDate || amTodayISO(); }
+  var flowControls = ['am-flow-date','am-flow-source','am-flow-destination','am-flow-amount','am-flow-note'];
+  flowControls.forEach(function(id){ var node=document.getElementById(id); if(node) node.disabled=!canEdit; });
+  var flowDate = document.getElementById('am-flow-date');
+  if (flowDate && !flowDate.value) flowDate.value = amTodayISO();
+  renderAMCashFlows();
+  renderAMSnapshots();
 }
 
 // ══════════════════════════════════════════════
