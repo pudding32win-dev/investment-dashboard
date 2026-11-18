@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d0f14">
 <title>策略儀表板｜W5</title>
-<!-- BUILD_VERSION: W5-2026-11-18-01（ETF持倉股數與總成本輸入、平均成本及損益計算） -->
+<!-- BUILD_VERSION: W6-2026-11-18-01（ETF進出場日期、頂部持倉明細、底部批次交易紀錄及總覽同步） -->
 <meta name="build-version" content="W5-2026-11-18-01">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -771,6 +771,12 @@ body.readonly .am-edit-only{display:none!important;}
     </div>
   </div>
 
+  <!-- ── ETF 持倉總覽（與長期投資頁同步） ── -->
+  <div class="card" id="etf-overview-card" style="margin-bottom:14px">
+    <div class="card-hd">💰 ETF 持倉總覽｜0050・0056・00878・00919</div>
+    <div class="card-bd" style="padding:10px 14px"><div id="etf-overview-summary"></div></div>
+  </div>
+
   <!-- ── 資金配置 ── -->
   <div class="card" style="margin-bottom:14px">
     <div class="card-hd">💰 資金配置</div>
@@ -1146,12 +1152,27 @@ body.readonly .am-edit-only{display:none!important;}
   <div class="card" style="margin:12px 0;border:1px solid rgba(52,211,153,.32)">
     <div class="card-hd" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><span>💰 ETF退休現金流｜0050・0056・00878・00919</span><span style="font-size:10px;color:var(--muted)">獨立新增模組，不更動原有持倉</span></div>
     <div class="card-bd">
+      <div style="font-size:12px;font-weight:800;margin:2px 0 7px">📋 ETF 持倉明細｜一眼查看投入成本、月息與目前報酬</div>
+      <div id="etf-holdings-table" style="margin-bottom:12px"></div>
       <div id="etf-cashflow-summary" class="metrics"></div>
       <div id="etf-monthly-calendar" style="margin:12px 0"></div>
       <div style="font-size:11px;color:var(--muted2);line-height:1.8;margin:8px 0 12px">每檔 ETF 分別輸入持有股數與持倉總成本；系統自動計算平均成本、市值、未實現損益、報酬率及股利殖利率。年度配息仍為估算值，實際配息以公告為準。</div>
       <div id="etf-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
       <div id="etf-detail"></div>
       <div style="font-size:10px;color:var(--muted);line-height:1.7;margin-top:10px">參考基準：2026年已公告/已發放配息（0050：1.60元、0056：4.936元、00878：3.34元、00919：3.42元）；參考股價為2026/11/17收盤。這是估算基準，不代表未來保證配息。可在各檔頁籤自行更新股價與年配息假設。</div>
+      <div style="border-top:1px solid var(--border2);margin-top:16px;padding-top:12px">
+        <div style="font-size:13px;font-weight:800;margin-bottom:8px">🧾 批次交易紀錄｜統一放在最下方</div>
+        <div class="form-grid">
+          <div class="fg"><label>ETF</label><select id="etf-trade-code"><option value="0050">0050</option><option value="0056">0056</option><option value="00878">00878</option><option value="00919">00919</option></select></div>
+          <div class="fg"><label>交易類型</label><select id="etf-trade-type"><option value="BUY">買進</option><option value="SELL">賣出</option></select></div>
+          <div class="fg"><label>交易日期</label><input id="etf-trade-date" type="date"></div>
+          <div class="fg"><label>股數</label><input id="etf-trade-shares" type="number" min="1" step="1" placeholder="輸入股數"></div>
+          <div class="fg"><label>成交單價</label><input id="etf-trade-price" type="number" min="0.01" step="0.01" placeholder="輸入成交價"></div>
+          <div class="fg"><label>交易總額／成本（含手續費）</label><input id="etf-trade-amount" type="number" min="0" step="1" placeholder="輸入實際金額"></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap"><button onclick="addEtfTrade()" class="sbtn" style="background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.35);color:#34d399">＋ 新增交易紀錄</button><span id="etf-trade-msg" class="form-msg"></span></div>
+        <div id="etf-trade-log" style="margin-top:12px"></div>
+      </div>
     </div>
   </div>
   <div style="padding:6px 0 2px">
@@ -1310,7 +1331,7 @@ body.readonly .am-edit-only{display:none!important;}
 </div>
 
 
-<div class="footer">策略儀表板 W5 · 00631L 元大台灣50正2 · 2330 台積電 · 00662 NQ 長期投資 · ETF退休股利現金流 · ☁️ Firebase 雲端同步 · 報價延遲15-20分鐘 · 僅供參考</div>
+<div class="footer">策略儀表板 W6 · 00631L 元大台灣50正2 · 2330 台積電 · 00662 NQ 長期投資 · ETF退休股利現金流 · ☁️ Firebase 雲端同步 · 報價延遲15-20分鐘 · 僅供參考</div>
 
 <!-- ══ Firebase + 主程式 ══ -->
 <script>
@@ -2063,7 +2084,7 @@ var activeEtfCode = '0050';
 function getEtfRecord(code) {
   var base = ETF_DEFAULTS[code];
   var saved = (DATA.ETF && DATA.ETF[code]) || {};
-  return { shares:Number(saved.shares)||0, totalCost:Number(saved.totalCost)||0, price:Number(saved.price)||base.price, annual:(saved.annual!==undefined && saved.annual!==null)?Number(saved.annual):base.annual, name:base.name, frequency:base.frequency, months:base.months };
+  return { shares:Number(saved.shares)||0, totalCost:Number(saved.totalCost)||0, price:Number(saved.price)||base.price, annual:(saved.annual!==undefined && saved.annual!==null)?Number(saved.annual):base.annual, entryDate:saved.entryDate||'', exitDate:saved.exitDate||'', trades:Array.isArray(saved.trades)?saved.trades:[], name:base.name, frequency:base.frequency, months:base.months };
 }
 function renderEtfCashflow() {
   var summary = document.getElementById('etf-cashflow-summary');
@@ -2072,6 +2093,9 @@ function renderEtfCashflow() {
   if (!summary || !tabs || !detail) return;
   var codes = Object.keys(ETF_DEFAULTS), totalShares=0, totalAnnual=0, totalValue=0, totalCost=0;
   codes.forEach(function(c){ var r=getEtfRecord(c); totalShares+=r.shares; totalAnnual+=r.shares*r.annual; totalValue+=r.shares*r.price; totalCost+=r.totalCost; });
+  var holdingsTable=document.getElementById('etf-holdings-table');
+  if(holdingsTable){var rows=codes.map(function(c){var x=getEtfRecord(c),mv=x.shares*x.price,pl=mv-x.totalCost,rp=x.totalCost>0?pl/x.totalCost*100:null,monthly=x.shares*x.annual/12;return '<tr><td><b>'+c+'</b><div style="font-size:10px;color:var(--muted)">'+x.name+'</div></td><td>'+x.shares.toLocaleString('en-US')+'</td><td>$'+Math.round(x.totalCost).toLocaleString('en-US')+'</td><td>$'+Math.round(monthly).toLocaleString('en-US')+'</td><td style="color:'+(pl>=0?'#34d399':'#f87171')+'">'+(x.totalCost?(pl>=0?'+$':'-$')+Math.round(Math.abs(pl)).toLocaleString('en-US'):'—')+'</td><td style="color:'+(pl>=0?'#34d399':'#f87171')+'">'+(rp===null?'—':(rp>=0?'+':'')+rp.toFixed(2)+'%')+'</td></tr>';}).join('');holdingsTable.innerHTML='<div class="tbl-wrap"><table style="min-width:620px"><thead><tr><th>ETF</th><th>持有股數</th><th>投入總成本</th><th>月平均股利</th><th>未實現損益</th><th>目前報酬率</th></tr></thead><tbody>'+rows+'</tbody></table></div>';}
+  renderEtfOverview();
   var totalYield = totalValue>0 ? totalAnnual/totalValue*100 : 0;
   var monthMap = {'0050':[1,7],'0056':[1,4,7,10],'00878':[2,5,8,11],'00919':[3,6,9,12]};
   var monthRows = [];
@@ -2098,19 +2122,39 @@ function renderEtfCashflow() {
     '<div class="form-grid">'+
     '<div class="fg"><label>持有股數（股）</label><input id="etf-shares" type="number" min="0" step="1" value="'+r.shares+'"></div>'+
     '<div class="fg"><label>持倉總成本（元，含手續費）</label><input id="etf-total-cost" type="number" min="0" step="1" value="'+r.totalCost+'" placeholder="輸入累計投入成本"></div>'+
+    '<div class="fg"><label>進場日期</label><input id="etf-entry-date" type="date" value="'+r.entryDate+'"></div>'+
+    '<div class="fg"><label>出場日期（未出場可留空）</label><input id="etf-exit-date" type="date" value="'+r.exitDate+'"></div>'+
     '<div class="fg"><label>參考股價（元）</label><input id="etf-price" type="number" min="0" step="0.01" value="'+r.price.toFixed(2)+'"></div>'+
     '<div class="fg"><label>每單位年度配息假設（元）</label><input id="etf-annual" type="number" min="0" step="0.001" value="'+r.annual.toFixed(3)+'"></div>'+
     '<div class="fg"><label>配息頻率／月份</label><input value="'+r.frequency+'｜'+r.months+'" disabled></div></div>'+
     '<div style="display:flex;gap:8px;align-items:center;margin-top:12px"><button onclick="saveEtfHolding(\''+activeEtfCode+'\')" class="sbtn" style="background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.35);color:#34d399">💾 儲存 '+activeEtfCode+'</button><span id="etf-save-msg" class="form-msg"></span></div>'+
     '<div style="font-size:10.5px;color:var(--muted);margin-top:8px">計算方式：平均成本＝持倉總成本 ÷ 股數；未實現損益＝股數 × 參考股價 − 持倉總成本；報酬率＝未實現損益 ÷ 持倉總成本。股利殖利率另列參考市價殖利率及成本殖利率。持倉總成本請輸入累計實際投入金額，建議含手續費。</div>';
+  renderEtfTradeLog();
 }
+function renderEtfOverview(){
+  var el=document.getElementById('etf-overview-summary'); if(!el)return;
+  var codes=Object.keys(ETF_DEFAULTS),cost=0,value=0,annual=0;
+  var rows=codes.map(function(c){var r=getEtfRecord(c),v=r.shares*r.price,p=v-r.totalCost,pct=r.totalCost?p/r.totalCost*100:null;cost+=r.totalCost;value+=v;annual+=r.shares*r.annual;return '<tr><td><b>'+c+'</b></td><td>'+r.shares.toLocaleString('en-US')+'</td><td>$'+Math.round(r.totalCost).toLocaleString('en-US')+'</td><td>$'+Math.round(r.shares*r.annual/12).toLocaleString('en-US')+'</td><td style="color:'+(p>=0?'#34d399':'#f87171')+'">'+(r.totalCost?(p>=0?'+$':'-$')+Math.round(Math.abs(p)).toLocaleString('en-US'):'—')+'</td><td>'+(pct===null?'—':(pct>=0?'+':'')+pct.toFixed(2)+'%')+'</td></tr>';}).join('');
+  var pl=value-cost,ret=cost?pl/cost*100:null;
+  el.innerHTML='<div class="metrics" style="margin-bottom:10px">'+[['ETF投入成本','$'+Math.round(cost).toLocaleString('en-US')],['ETF目前市值','$'+Math.round(value).toLocaleString('en-US')],['預估月平均股利','$'+Math.round(annual/12).toLocaleString('en-US')],['ETF合計報酬率',ret===null?'—':(ret>=0?'+':'')+ret.toFixed(2)+'%']].map(function(a){return '<div class="mc"><div class="mc-l">'+a[0]+'</div><div class="mc-v">'+a[1]+'</div></div>';}).join('')+'</div><div class="tbl-wrap"><table style="min-width:600px"><thead><tr><th>ETF</th><th>股數</th><th>投入成本</th><th>月平均股利</th><th>未實現損益</th><th>報酬率</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+window.addEtfTrade = async function(){
+  if(!canEdit){alert('目前為唯讀模式，請使用 ?edit=pudding2026 編輯');return;} if(_isOfflineMode){alert('目前離線，請恢復連線後再新增');return;}
+  var code=document.getElementById('etf-trade-code').value,type=document.getElementById('etf-trade-type').value,date=document.getElementById('etf-trade-date').value,shares=Number(document.getElementById('etf-trade-shares').value),price=Number(document.getElementById('etf-trade-price').value),amount=Number(document.getElementById('etf-trade-amount').value);
+  if(!date||!Number.isInteger(shares)||shares<=0||!Number.isFinite(price)||price<=0||!Number.isFinite(amount)||amount<=0){alert('請輸入交易日期、正確股數、成交單價及交易總額');return;}
+  DATA.ETF=DATA.ETF||{};var rec=DATA.ETF[code]||{};rec.trades=Array.isArray(rec.trades)?rec.trades:[];rec.trades.push({id:Date.now(),type:type,date:date,shares:shares,price:price,amount:amount});rec.trades.sort(function(a,b){return String(a.date).localeCompare(String(b.date));});DATA.ETF[code]=rec;
+  await saveData();renderEtfCashflow();var msg=document.getElementById('etf-trade-msg');if(msg)msg.textContent='交易紀錄已儲存';
+  ['etf-trade-shares','etf-trade-price','etf-trade-amount'].forEach(function(id){document.getElementById(id).value='';});
+};
+window.deleteEtfTrade = async function(code,id){if(!canEdit||_isOfflineMode)return;if(!confirm('確定刪除此筆交易紀錄？'))return;var rec=(DATA.ETF&&DATA.ETF[code])||{};rec.trades=(rec.trades||[]).filter(function(t){return String(t.id)!==String(id);});DATA.ETF[code]=rec;await saveData();renderEtfCashflow();};
+function renderEtfTradeLog(){var el=document.getElementById('etf-trade-log');if(!el)return;var all=[];Object.keys(ETF_DEFAULTS).forEach(function(c){var r=getEtfRecord(c);r.trades.forEach(function(t){all.push(Object.assign({code:c},t));});});all.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});if(!all.length){el.innerHTML='<div style="font-size:11px;color:var(--muted)">目前尚無批次交易紀錄。</div>';return;}el.innerHTML='<div class="tbl-wrap"><table style="min-width:650px"><thead><tr><th>日期</th><th>ETF</th><th>類型</th><th>股數</th><th>成交單價</th><th>交易總額</th><th>操作</th></tr></thead><tbody>'+all.map(function(t){return '<tr><td>'+t.date+'</td><td>'+t.code+'</td><td>'+(t.type==='BUY'?'買進':'賣出')+'</td><td>'+Number(t.shares).toLocaleString('en-US')+'</td><td>$'+Number(t.price).toFixed(2)+'</td><td>$'+Math.round(t.amount).toLocaleString('en-US')+'</td><td><button onclick="deleteEtfTrade(\''+t.code+'\',\''+t.id+'\')" class="sbtn">刪除</button></td></tr>';}).join('')+'</tbody></table></div>';}
 window.selectEtf = function(code){ if(!ETF_DEFAULTS[code])return; activeEtfCode=code; renderEtfCashflow(); };
 window.saveEtfHolding = async function(code){
   if(!canEdit){alert('目前為唯讀模式，請使用 ?edit=pudding2026 編輯');return;}
   if(_isOfflineMode){alert('目前離線，為避免舊資料覆蓋雲端，暫不儲存。請恢復連線後重整。');return;}
   var shares=Number(document.getElementById('etf-shares').value), totalCost=Number(document.getElementById('etf-total-cost').value), price=Number(document.getElementById('etf-price').value), annual=Number(document.getElementById('etf-annual').value);
   if(![shares,totalCost,price,annual].every(Number.isFinite)||shares<0||totalCost<0||price<=0||annual<0){alert('請確認股數、持倉總成本、股價及年配息皆為有效非負數，股價需大於0');return;}
-  DATA.ETF=DATA.ETF||{}; DATA.ETF[code]={shares:shares,totalCost:totalCost,price:price,annual:annual,updatedAt:fmtToday()};
+  var oldRecord=(DATA.ETF&&DATA.ETF[code])||{}; DATA.ETF=DATA.ETF||{}; DATA.ETF[code]={shares:shares,totalCost:totalCost,price:price,annual:annual,entryDate:document.getElementById('etf-entry-date').value||'',exitDate:document.getElementById('etf-exit-date').value||'',trades:Array.isArray(oldRecord.trades)?oldRecord.trades:[],updatedAt:fmtToday()};
   await saveData(); renderEtfCashflow();
   var msg=document.getElementById('etf-save-msg'); if(msg)msg.textContent='已儲存至雲端';
 };
