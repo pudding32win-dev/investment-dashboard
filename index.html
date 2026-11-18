@@ -6,9 +6,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d0f14">
-<title>策略儀表板｜W1</title>
-<!-- BUILD_VERSION: W1-2026-11-18-02（新增退休股利現金流＋大盤週期白話解讀；保留舊紀錄） -->
-<meta name="build-version" content="W1-2026-11-18-02">
+<title>策略儀表板｜W4</title>
+<!-- BUILD_VERSION: W4-2026-11-18-01（00662 1拆5持倉換算與一次性雲端資料遷移） -->
+<meta name="build-version" content="W2-2026-11-18-01">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -663,7 +663,7 @@ body.readonly .am-edit-only{display:none!important;}
 
 <!-- ── 頂部導覽 ── -->
 <div class="topbar">
-  <div class="topbar-logo">策略儀表板 <span>W1｜資產管理</span></div>
+  <div class="topbar-logo">策略儀表板 <span>W3｜資產管理</span></div>
   <div class="topbar-right">
     <span class="readonly-badge">👁 唯讀</span><span class="market-time" id="mktTime">—</span>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="切換亮/暗主題">🌙</button>
@@ -1220,7 +1220,7 @@ body.readonly .am-edit-only{display:none!important;}
   <div class="card">
     <div class="card-hd" style="display:flex;align-items:center;justify-content:space-between"><span>🟣 00662 NQ｜長期投資</span><span style="font-size:10px;color:#c4b5fd">唯一管理入口</span></div>
     <div class="card-bd">
-      <div class="metrics" id="metrics-NQ"></div>
+      <div style="margin:0 0 10px;padding:9px 12px;border:1px solid rgba(196,181,253,.28);border-radius:8px;background:rgba(196,181,253,.06);font-size:11px;color:var(--muted2);line-height:1.7">📌 2026/11/17 起 00662 完成 1 拆 5：原 3,000 股換算為 15,000 股；總投入成本維持 $346,843，換算平均成本約 $23.1229／股。歷史買進批次同步按股數 ×5、單價 ÷5 換算。</div><div class="metrics" id="metrics-NQ"></div>
       <div class="card" style="margin-top:10px"><div class="card-bd" id="nq-info" style="padding:12px 14px;font-size:11px;color:var(--muted2);line-height:1.7"></div></div>
       <div id="nq-edit-box" class="card" style="display:none;margin-top:10px;border:1px solid rgba(196,181,253,.35)">
         <div class="card-hd" style="color:#c4b5fd">✏️ 編輯 00662 NQ</div>
@@ -1237,7 +1237,7 @@ body.readonly .am-edit-only{display:none!important;}
   <div class="card" id="nq-add-card">
     <div class="card-hd">➕ 新增 00662 NQ 買進</div>
     <div class="card-bd"><div class="form-grid">
-      <div class="fg"><label>批次名稱</label><input id="NQ-batch" placeholder="00662 NQ1"></div><div class="fg"><label>股數</label><input id="NQ-shares" type="number" min="1" step="1" placeholder="1000"></div><div class="fg"><label>進場日期</label><input id="NQ-ed" placeholder="2026/9/16"></div><div class="fg"><label>進場價</label><input id="NQ-en" type="number" min="0" step="0.01" placeholder="39.07"></div><div class="fg"><label>手續費（元）</label><input id="NQ-fee" type="number" min="0" step="1" placeholder="0"></div>
+      <div class="fg"><label>批次名稱</label><input id="NQ-batch" placeholder="00662 NQ1"></div><div class="fg"><label>股數</label><input id="NQ-shares" type="number" min="1" step="1" placeholder="1000"></div><div class="fg"><label>進場日期</label><input id="NQ-ed" placeholder="2026/9/16"></div><div class="fg"><label>進場價</label><input id="NQ-en" type="number" min="0" step="0.01" placeholder="23.10"></div><div class="fg"><label>手續費（元）</label><input id="NQ-fee" type="number" min="0" step="1" placeholder="0"></div>
     </div><div class="submit-wrap"><button class="sbtn" style="background:rgba(196,181,253,.12);border:1px solid rgba(196,181,253,.35);color:#c4b5fd" onclick="addNQTrade()">新增這筆</button><span class="form-msg" id="msg-NQ"></span></div></div>
   </div>
   <div class="card"><div class="card-hd">📌 00662 使用方式</div><div class="card-bd" style="font-size:12px;color:var(--muted2);line-height:1.9">00662 NQ 與 2330 台積電帳務完全分開。只有本頁可以編輯／新增 00662；「長期投資」頁面只顯示 00662，不提供第二套編輯入口。</div></div>
@@ -1246,11 +1246,11 @@ body.readonly .am-edit-only{display:none!important;}
 <!-- ══ 大盤週期紀錄面板 ══ -->
 <div class="panel" id="panel-M">
   <div style="padding:12px 0 6px;font-size:12px;color:var(--muted)">
-    以加權指數 TWII 為大盤基準　｜　創新高自動記錄持股獲利%　｜　回檔每達 10% / 15% / 20% / 25% / 30% 分級自動記錄
+    以加權指數 TWII 為大盤基準　｜　創新高追蹤大盤點位與台積電持倉　｜　回檔每達 10% / 15% / 20% / 25% / 30% 分級自動記錄
   </div>
 
   <div style="background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.25);border-radius:10px;padding:12px 14px;font-size:12px;color:#93c5fd;line-height:1.6;margin-bottom:14px">
-    <b style="color:#bfdbfe">邏輯說明：</b>大盤（TWII）每創歷史新高，自動記一筆灰K／黃K／台積電持股市值與獲利%快照；當大盤從最高點回檔每觸及 10%／15%／20%／25%／30% 其中一個級距，就各自動記一筆各持股回檔%，並算出「倍數」＝持股回檔% ÷ 大盤回檔%（00631L 理論槓桿2倍，落在約1.8x~2.3x屬正常，明顯偏離會標記檢討）。每個級距只在同一次回檔中記錄一次，等大盤再創新高後才會重新武裝。長期累積可回頭檢視策略是否與大盤週期脫鉤。
+    <b style="color:#bfdbfe">邏輯說明：</b>大盤（TWII）每創歷史新高，記錄大盤點位及台積電現有持倉市值、未實現報酬；大盤回檔達 10%／15%／20%／25%／30% 時，記錄大盤回檔幅度與台積電同期回檔，觀察台積電相對大盤的強弱。黃K、灰K目前沒有持倉，因此不再列入週期分析；既有歷史資料保留，不會刪除。
   </div>
 
   <!-- 新增白話版週期判讀：不修改下方原有歷史紀錄與表格 -->
@@ -1280,10 +1280,7 @@ body.readonly .am-edit-only{display:none!important;}
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>日期</th><th>大盤點位</th>
-          <th>灰K市值</th><th>灰K獲利%</th>
-          <th>黃K市值</th><th>黃K獲利%</th>
-          <th>台積電市值</th><th>台積電獲利%</th>
+          <th>日期</th><th>大盤創高點位</th><th>較前次高點增加</th><th>台積電市值</th><th>台積電獲利%</th>
           <th>操作</th>
         </tr></thead>
         <tbody id="tbody-mkt-ath"></tbody>
@@ -1299,11 +1296,7 @@ body.readonly .am-edit-only{display:none!important;}
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>日期</th><th>回檔級距</th><th>大盤回檔%</th>
-          <th>灰K回檔%</th><th>灰K倍數</th>
-          <th>黃K回檔%</th><th>黃K倍數</th>
-          <th>台積電回檔%</th><th>台積電倍數</th>
-          <th>判斷</th><th>操作</th>
+          <th>日期</th><th>回檔級距</th><th>大盤點位</th><th>大盤回檔%</th><th>台積電回檔%</th><th>台積電／大盤跌幅比</th><th>相對強弱</th><th>操作</th>
         </tr></thead>
         <tbody id="tbody-mkt-dd"></tbody>
       </table>
@@ -1357,7 +1350,7 @@ const db  = getFirestore(app);
 const DOC_REF = doc(db, 'dashboard', '00631L');
 
 // ── 預設資料 ──
-const DEFAULT_NQ = {shares:3000,cost:232030,price:39.0723333333,pnl:-114813,trades:[]};
+const DEFAULT_NQ = {shares:15000,cost:346843,price:23.10,pnl:0,trades:[],split5Applied:true,splitRatio:5,splitDate:'2026/11/17'};
 // ETF退休股利現金流：年配息預設採2026年已公告/已發放金額，股數由使用者輸入；價格為2026/11/17參考收盤，均可自行更新。
 const ETF_DEFAULTS = {
   '0050':{name:'元大台灣50',price:94.00,annual:1.60,frequency:'半年配',months:'1、7月'},
@@ -1511,7 +1504,7 @@ const DEFAULT_DATA = {
     {date:'2026/5/25',equity:480325},
   ],
   PL: [],
-  NQ: { shares:3000, cost:232030, price:39.0723333333, pnl:-114813 },
+  NQ: { shares:15000, cost:346843, price:23.10, pnl:0, trades:[], split5Applied:true, splitRatio:5, splitDate:'2026/11/17' },
   RC: {},
   RB: null,
   AM: { accounts: [], futuresAccounts: [], qff: { accountId: 'F1', direction: 'LONG', lots: 10, multiplier: 100, contractMonth: '', entryPrice: null, currentPrice: null }, brokerCash: 0, brokerDate: '', cashFlows: [], snapshots: [] },
@@ -1583,6 +1576,49 @@ const EDIT_KEY = 'pudding2026';
 const urlKey = new URLSearchParams(location.search).get('edit');
 const canEdit = urlKey === EDIT_KEY;
 if (!canEdit) document.body.classList.add('readonly');
+
+// ══ 00662 NQ：2026/11/17 1拆5 一次性資料遷移 ══
+// 舊資料若仍是拆分前 3,000 股，換算為 15,000 股；總投入成本依使用者確認維持 346,843 元。
+// split5Applied 標記會隨 NQ 寫入 Firebase，避免每次載入或即時監聽重複乘以 5。
+function applyNQSplit5Migration() {
+  var q = (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : Object.assign({}, DEFAULT_NQ);
+  if (q.split5Applied === true) { DATA.NQ = q; return false; }
+  var oldShares = Number(q.shares) || 0;
+  if (oldShares > 0 && oldShares <= 5000) {
+    q.shares = oldShares * 5;
+    if (Array.isArray(q.trades)) {
+      q.trades = q.trades.map(function(t) {
+        var x = Object.assign({}, t);
+        if (Number.isFinite(Number(x.shares))) x.shares = Number(x.shares) * 5;
+        if (Number.isFinite(Number(x.en))) x.en = Number(x.en) / 5;
+        return x;
+      });
+    }
+    q.cost = 346843;
+    q.price = 23.10;
+    q.pnl = q.price * q.shares - q.cost;
+    q.split5Applied = true;
+    q.splitRatio = 5;
+    q.splitDate = '2026/11/17';
+    q.preSplitShares = oldShares;
+    q.preSplitCost = 346843;
+    DATA.NQ = q;
+    console.info('00662 1拆5 遷移完成：', oldShares, '→', q.shares, '股；成本維持 $346,843');
+    return true;
+  }
+  // 已經是拆分後股數時，只補上遷移標記，不再調整股數。
+  if (oldShares >= 10000) {
+    q.split5Applied = true;
+    q.splitRatio = 5;
+    q.splitDate = q.splitDate || '2026/11/17';
+    if (oldShares === 15000) q.cost = 346843;
+    if (!Number(q.price) || Number(q.price) > 30) q.price = 23.10;
+    q.pnl = (Number(q.price)||0) * oldShares - (Number(q.cost)||0);
+    DATA.NQ = q;
+    return true;
+  }
+  return false;
+}
 
 // ══ 00662 NQ 長期投資編輯 ══
 function getNQData() {
@@ -1781,7 +1817,10 @@ async function initData() {
       DATA.AM = normalizeAssetData(DATA.AM);
       await setDoc(DOC_REF, DATA);
     }
-    if (!DATA.NQ || Array.isArray(DATA.NQ)) DATA.NQ=Object.assign({}, DEFAULT_NQ); if(!DATA.ETF) DATA.ETF={}; getNQData();
+    if (!DATA.NQ || Array.isArray(DATA.NQ)) DATA.NQ=Object.assign({}, DEFAULT_NQ); if(!DATA.ETF) DATA.ETF={};
+    var _nqSplitMigrated = applyNQSplit5Migration();
+    getNQData();
+    if (_nqSplitMigrated) await saveData(); // 一次性回寫 Firebase；不動其他資產與大盤歷史資料
     setCloudStatus('connected', '已連線 · 即時同步中');
     _mktReady = true; // ✅ Firebase 資料已確認載入完成，大盤週期功能可以開始運作
     _isOfflineMode = false; // ✅ 確認是雲端最新資料，允許正常存檔
@@ -1794,11 +1833,13 @@ async function initData() {
         // 只在非本機儲存觸發時才更新（避免自己觸發自己）
         if (!isSaving) {
           DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], ETF: d.ETF || {}, D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], AM: normalizeAssetData(d.AM), NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : Object.assign({}, DEFAULT_NQ), RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
+          var _nqSnapshotMigrated = applyNQSplit5Migration();
           normalizeDDates(DATA);
           _rebalCapital = DATA.RC || {};
           _mktReady = true;
           _isOfflineMode = false; // ✅ 即時監聽收到伺服器最新資料，確認不是離線狀態
           renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderEtfCashflow(); renderNQ(); renderOpenPositions(); renderPoolLog(); renderSummary(); renderRebalCapitalForm(); renderAssetManagement(); if (typeof renderMarketCycle==="function") renderMarketCycle();
+          if (_nqSnapshotMigrated) saveData();
         }
         setCloudStatus('connected', '已連線 · 即時同步中');
       }
@@ -5357,7 +5398,9 @@ function initSignalListener() {
       // 只更新價格，不改動股數與成本；避免覆蓋使用者帳務資料。
       try {
         var nqQuote = d.prices && d.prices['00662'];
-        var nqPrice = nqQuote && Number(nqQuote.price);
+        var nqRawPrice = nqQuote && Number(nqQuote.price);
+        // 1拆5後正常價位約 20 多元；若 KLINE 暫時仍送出拆分前原始報價（>60），自動除以 5。
+        var nqPrice = (isFinite(nqRawPrice) && nqRawPrice > 60) ? nqRawPrice / 5 : nqRawPrice;
         if (isFinite(nqPrice) && nqPrice > 0) {
           var nqBase = (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : Object.assign({}, DEFAULT_NQ);
           DATA.NQ = Object.assign({}, nqBase, {
@@ -6008,7 +6051,8 @@ function renderMarketCycle() {
       ['大盤歷史最高', mkt.ath ? fmt(mkt.ath) : '—', 'pos'],
       ['距高點回檔', curPct !== null ? (curPct>=0?'+':'')+curPct.toFixed(1)+'%' : '—', curPct!==null && curPct<0 ? 'neg':'neu'],
       ['目前狀態', statusHtml, statusCls],
-      ['持股合計獲利%（未平倉）', (snapNow.total.pct>=0?'+':'')+snapNow.total.pct.toFixed(1)+'%', snapNow.total.pct>=0?'pos':'neg'],
+      ['台積電目前市值', '$'+fmt(snapNow.T.mv), 'neu'],
+      ['台積電未實現報酬', (snapNow.T.pct>=0?'+':'')+snapNow.T.pct.toFixed(1)+'%', snapNow.T.pct>=0?'pos':'neg'],
     ].map(function(x){ return '<div class="mc"><div class="mc-l">'+x[0]+'</div><div class="mc-v '+x[2]+'">'+x[1]+'</div></div>'; }).join('');
   }
 
@@ -6016,40 +6060,37 @@ function renderMarketCycle() {
   var athRows = mkt.athHistory.slice().reverse();
   document.getElementById('mkt-ath-count').textContent = '共 '+athRows.length+' 筆';
   elAth.innerHTML = athRows.length ? athRows.map(function(r) {
+    var idx = mkt.athHistory.findIndex(function(x){ return x.date === r.date; });
+    var prev = idx > 0 ? mkt.athHistory[idx-1] : null;
+    var gainPts = prev ? r.twii - prev.twii : null;
     return '<tr>'
       + '<td>'+r.date+'</td><td class="pos">'+fmt(r.twii)+'</td>'
-      + '<td>'+fmt(r.G.mv)+'</td><td>'+_mktPctSpan(r.G.pct)+'</td>'
-      + '<td>'+fmt(r.Y.mv)+'</td><td>'+_mktPctSpan(r.Y.pct)+'</td>'
-      + '<td>'+fmt(r.T.mv)+'</td><td>'+_mktPctSpan(r.T.pct)+'</td>'
+      + '<td>'+(gainPts===null?'首筆紀錄':'+'+fmt(gainPts)+' 點')+'</td>'
+      + '<td>'+fmt(r.T ? r.T.mv : 0)+'</td><td>'+_mktPctSpan(r.T ? r.T.pct : 0)+'</td>'
       + '<td style="white-space:nowrap">'
       + '<button class="mkt-edit-btn" data-date="'+r.date+'" style="font-size:11px;padding:3px 7px;border-radius:5px;background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.3);color:#60a5fa;cursor:pointer;margin-right:4px">✎</button>'
       + '<button class="mkt-del-btn" data-date="'+r.date+'" style="font-size:11px;padding:3px 7px;border-radius:5px;background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);color:#f87171;cursor:pointer">🗑</button>'
       + '</td>'
       + '</tr>';
-  }).join('') : '<tr><td colspan="9" style="color:var(--muted);text-align:center;padding:16px">尚無創新高紀錄</td></tr>';
+  }).join('') : '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:16px">尚無創新高紀錄</td></tr>';
   bindMktAthTableEvents();
 
   // 回檔紀錄表（新到舊）
   var ddRows = mkt.ddHistory.slice().reverse();
   document.getElementById('mkt-dd-count').textContent = '共 '+ddRows.length+' 筆';
   elDd.innerHTML = ddRows.length ? ddRows.map(function(r) {
-    var gm = r.twiiPct !== 0 ? r.G / r.twiiPct : NaN;
-    var ym = r.twiiPct !== 0 ? r.Y / r.twiiPct : NaN;
-    var tm = r.twiiPct !== 0 ? r.T / r.twiiPct : NaN;
-    var judge = _mktJudgeTag('G', gm); // 主要判斷以灰K(00631L 2倍槓桿)為準
-    var level = r.level || 10; // 舊資料沒有 level 欄位，預設當作10%那筆
+    var tm = r.twiiPct !== 0 ? (r.T||0) / r.twiiPct : NaN;
+    var judge = !isFinite(tm) ? '<span class="tag ok">資料不足</span>' : (tm < 0.8 ? '<span class="tag watch">台積電較抗跌</span>' : (tm > 1.2 ? '<span class="tag alert">台積電跌幅較大</span>' : '<span class="tag ok">與大盤接近</span>'));
+    var level = r.level || 10;
     var color = MKT_DD_COLOR[level] || '#9ca3af';
     var levelBadge = '<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+color+'22;color:'+color+';border:1px solid '+color+'55">≥'+level+'%</span>';
     var ddKey = r.date+'|'+level+'|'+r.athRef;
     return '<tr>'
-      + '<td>'+r.date+'</td><td>'+levelBadge+'</td><td class="neg">'+r.twiiPct.toFixed(1)+'%</td>'
-      + '<td>'+_mktPctSpan(r.G)+'</td><td>'+(isFinite(gm)?gm.toFixed(2)+'x':'—')+'</td>'
-      + '<td>'+_mktPctSpan(r.Y)+'</td><td>'+(isFinite(ym)?ym.toFixed(2)+'x':'—')+'</td>'
-      + '<td>'+_mktPctSpan(r.T)+'</td><td>'+(isFinite(tm)?tm.toFixed(2)+'x':'—')+'</td>'
-      + '<td>'+judge+'</td>'
+      + '<td>'+r.date+'</td><td>'+levelBadge+'</td><td>'+fmt(r.twii||0)+'</td><td class="neg">'+r.twiiPct.toFixed(1)+'%</td>'
+      + '<td>'+_mktPctSpan(r.T||0)+'</td><td>'+(isFinite(tm)?tm.toFixed(2)+'x':'—')+'</td><td>'+judge+'</td>'
       + '<td><button class="mkt-dd-edit-btn" data-ddkey="'+ddKey+'" style="font-size:11px;padding:3px 7px;border-radius:5px;background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.3);color:#60a5fa;cursor:pointer;margin-right:4px">✎</button><button class="mkt-dd-del-btn" data-ddkey="'+ddKey+'" style="font-size:11px;padding:3px 7px;border-radius:5px;background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);color:#f87171;cursor:pointer">🗑</button></td>'
       + '</tr>';
-  }).join('') : '<tr><td colspan="11" style="color:var(--muted);text-align:center;padding:16px">尚無回檔警戒紀錄（大盤尚未從高點回檔滿10%）</td></tr>';
+  }).join('') : '<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:16px">尚無回檔警戒紀錄（大盤尚未從高點回檔滿10%）</td></tr>';
   bindMktDdTableEvents();
 
   // 策略體檢建議：依目前實際回檔幅度，列出對應級距的建議（10/15/20/25/30%）
@@ -6073,11 +6114,10 @@ function renderMarketCycle() {
     }
     if (ddRows.length) {
       var last = ddRows[0];
-      var gm2 = last.twiiPct !== 0 ? last.G / last.twiiPct : NaN;
-      lines.push('最近一次觸發（'+last.date+'，≥'+(last.level||10)+'%級距）：大盤回檔 '+last.twiiPct.toFixed(1)+'%，灰K(00631L) 回檔 '+last.G.toFixed(1)+'%，槓桿倍數 '+(isFinite(gm2)?gm2.toFixed(2)+'x':'—')+'　'+_mktJudgeTag('G', gm2));
-      if (isFinite(gm2) && Math.abs(gm2-2.0)/2.0 > 0.3) {
-        lines.push('⚠️ 灰K實際跌幅與理論2倍槓桿落差較大，建議檢視進場時機或停損設定是否需要調整。');
-      }
+      var tm2 = last.twiiPct !== 0 ? (last.T||0) / last.twiiPct : NaN;
+      lines.push('最近一次觸發（'+last.date+'，≥'+(last.level||10)+'%級距）：大盤回檔 '+last.twiiPct.toFixed(1)+'%，台積電同期回檔 '+(last.T||0).toFixed(1)+'%，台積電／大盤跌幅比 '+(isFinite(tm2)?tm2.toFixed(2)+'x':'資料不足')+'。');
+      if (isFinite(tm2) && tm2 < 0.8) lines.push('台積電同期跌幅小於大盤，這段期間相對抗跌；仍需搭配基本面與產業趨勢判斷。');
+      else if (isFinite(tm2) && tm2 > 1.2) lines.push('台積電同期跌幅大於大盤，建議留意個股波動與持倉集中度。')
     }
     elAdvice.innerHTML = lines.map(function(l){ return '<div style="margin-bottom:6px">• '+l+'</div>'; }).join('');
   }
@@ -6350,14 +6390,11 @@ if (window._pendingCalls) {
     <div class="form-grid" style="grid-template-columns:1fr 1fr">
       <div class="fg" style="grid-column:1/-1"><label>日期</label><input id="ma-date" placeholder="2026/6/23"></div>
       <div class="fg" style="grid-column:1/-1"><label>大盤點位（TWII，實際盤中最高）</label><input id="ma-twii" type="number" step="0.01" placeholder="48219"></div>
-      <div class="fg"><label>灰K市值（留空維持原值）</label><input id="ma-g-mv" type="number" placeholder=""></div>
-      <div class="fg"><label>灰K獲利%（留空維持原值）</label><input id="ma-g-pct" type="number" step="0.1" placeholder=""></div>
-      <div class="fg"><label>黃K市值（留空維持原值）</label><input id="ma-y-mv" type="number" placeholder=""></div>
-      <div class="fg"><label>黃K獲利%（留空維持原值）</label><input id="ma-y-pct" type="number" step="0.1" placeholder=""></div>
+      <input id="ma-g-mv" type="hidden"><input id="ma-g-pct" type="hidden"><input id="ma-y-mv" type="hidden"><input id="ma-y-pct" type="hidden">
       <div class="fg"><label>台積電市值（留空維持原值）</label><input id="ma-t-mv" type="number" placeholder=""></div>
       <div class="fg"><label>台積電獲利%（留空維持原值）</label><input id="ma-t-pct" type="number" step="0.1" placeholder=""></div>
     </div>
-    <div style="font-size:10.5px;color:var(--muted);margin:-4px 0 12px">若只是要修正大盤點位錯誤，只填日期＋大盤點位即可，其餘欄位留空會沿用原本數值（新增紀錄則預設為0）。</div>
+    <div style="font-size:10.5px;color:var(--muted);margin:-4px 0 12px">此紀錄只追蹤大盤點位與台積電現有持倉；黃K、灰K不再顯示或要求輸入。</div>
     <div style="display:flex;gap:8px">
       <button onclick="document.getElementById('mktAthModal').style.display='none'" style="flex:1;padding:10px;border-radius:8px;background:rgba(107,114,128,0.15);border:1px solid rgba(107,114,128,0.3);color:#9ca3af;cursor:pointer">取消</button>
       <button onclick="saveMktAthManual()" style="flex:1;padding:10px;border-radius:8px;background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.4);color:#34d399;font-weight:600;cursor:pointer">儲存</button>
@@ -6387,11 +6424,10 @@ if (window._pendingCalls) {
       </div>
       <div class="fg"><label>大盤回檔%（負數，例如-15.2）</label><input id="md-twiipct" type="number" step="0.1" placeholder="-15.2"></div>
       <div class="fg" style="grid-column:1/-1"><label>大盤高點基準點位（選填，用來配對創新高紀錄）</label><input id="md-athref" type="number" step="0.01" placeholder="例如 48219"></div>
-      <div class="fg"><label>灰K回檔%</label><input id="md-g" type="number" step="0.1" placeholder="0"></div>
-      <div class="fg"><label>黃K回檔%</label><input id="md-y" type="number" step="0.1" placeholder="0"></div>
+      <input id="md-g" type="hidden" value="0"><input id="md-y" type="hidden" value="0">
       <div class="fg"><label>台積電回檔%</label><input id="md-t" type="number" step="0.1" placeholder="0"></div>
     </div>
-    <div style="font-size:10.5px;color:var(--muted);margin:-4px 0 12px">若不確定各持股當時回檔%，可以先填 0，之後有更準確數字再回來修正（點該列 ✎，目前列表還沒有編輯按鈕，會用「日期＋級距」找同一筆覆蓋，重複送出同一組日期+級距會直接更新內容）。</div>
+    <div style="font-size:10.5px;color:var(--muted);margin:-4px 0 12px">只需輸入大盤回檔與台積電同期回檔；黃K、灰K欄位已停止使用，舊紀錄仍保留於雲端資料。</div>
     <div style="display:flex;gap:8px">
       <button onclick="document.getElementById('mktDdModal').style.display='none'" style="flex:1;padding:10px;border-radius:8px;background:rgba(107,114,128,0.15);border:1px solid rgba(107,114,128,0.3);color:#9ca3af;cursor:pointer">取消</button>
       <button onclick="saveMktDdManual()" style="flex:1;padding:10px;border-radius:8px;background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.4);color:#f87171;font-weight:600;cursor:pointer">儲存</button>
