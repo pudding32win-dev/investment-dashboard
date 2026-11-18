@@ -6,9 +6,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d0f14">
-<title>策略儀表板｜W4</title>
-<!-- BUILD_VERSION: W4-2026-11-18-01（00662 1拆5持倉換算與一次性雲端資料遷移） -->
-<meta name="build-version" content="W2-2026-11-18-01">
+<title>策略儀表板｜W5</title>
+<!-- BUILD_VERSION: W5-2026-11-18-01（ETF持倉股數與總成本輸入、平均成本及損益計算） -->
+<meta name="build-version" content="W5-2026-11-18-01">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -663,7 +663,7 @@ body.readonly .am-edit-only{display:none!important;}
 
 <!-- ── 頂部導覽 ── -->
 <div class="topbar">
-  <div class="topbar-logo">策略儀表板 <span>W3｜資產管理</span></div>
+  <div class="topbar-logo">策略儀表板 <span>W5｜資產管理</span></div>
   <div class="topbar-right">
     <span class="readonly-badge">👁 唯讀</span><span class="market-time" id="mktTime">—</span>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="切換亮/暗主題">🌙</button>
@@ -1148,7 +1148,7 @@ body.readonly .am-edit-only{display:none!important;}
     <div class="card-bd">
       <div id="etf-cashflow-summary" class="metrics"></div>
       <div id="etf-monthly-calendar" style="margin:12px 0"></div>
-      <div style="font-size:11px;color:var(--muted2);line-height:1.8;margin:8px 0 12px">輸入各檔持有股數，系統依「每單位近年/年度配息 × 股數」估算年度股利，並換算月平均。配息不是固定利息，實際金額會變動；殖利率以年度配息 ÷ 參考股價計算。</div>
+      <div style="font-size:11px;color:var(--muted2);line-height:1.8;margin:8px 0 12px">每檔 ETF 分別輸入持有股數與持倉總成本；系統自動計算平均成本、市值、未實現損益、報酬率及股利殖利率。年度配息仍為估算值，實際配息以公告為準。</div>
       <div id="etf-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
       <div id="etf-detail"></div>
       <div style="font-size:10px;color:var(--muted);line-height:1.7;margin-top:10px">參考基準：2026年已公告/已發放配息（0050：1.60元、0056：4.936元、00878：3.34元、00919：3.42元）；參考股價為2026/11/17收盤。這是估算基準，不代表未來保證配息。可在各檔頁籤自行更新股價與年配息假設。</div>
@@ -1310,7 +1310,7 @@ body.readonly .am-edit-only{display:none!important;}
 </div>
 
 
-<div class="footer">策略儀表板 · 00631L 元大台灣50正2 · 2330 台積電 · 00662 NQ 長期投資 · ETF退休股利現金流 · ☁️ Firebase 雲端同步 · 報價延遲15-20分鐘 · 僅供參考</div>
+<div class="footer">策略儀表板 W5 · 00631L 元大台灣50正2 · 2330 台積電 · 00662 NQ 長期投資 · ETF退休股利現金流 · ☁️ Firebase 雲端同步 · 報價延遲15-20分鐘 · 僅供參考</div>
 
 <!-- ══ Firebase + 主程式 ══ -->
 <script>
@@ -2063,15 +2063,15 @@ var activeEtfCode = '0050';
 function getEtfRecord(code) {
   var base = ETF_DEFAULTS[code];
   var saved = (DATA.ETF && DATA.ETF[code]) || {};
-  return { shares:Number(saved.shares)||0, price:Number(saved.price)||base.price, annual:Number(saved.annual)||base.annual, name:base.name, frequency:base.frequency, months:base.months };
+  return { shares:Number(saved.shares)||0, totalCost:Number(saved.totalCost)||0, price:Number(saved.price)||base.price, annual:(saved.annual!==undefined && saved.annual!==null)?Number(saved.annual):base.annual, name:base.name, frequency:base.frequency, months:base.months };
 }
 function renderEtfCashflow() {
   var summary = document.getElementById('etf-cashflow-summary');
   var tabs = document.getElementById('etf-tabs');
   var detail = document.getElementById('etf-detail');
   if (!summary || !tabs || !detail) return;
-  var codes = Object.keys(ETF_DEFAULTS), totalShares=0, totalAnnual=0, totalValue=0;
-  codes.forEach(function(c){ var r=getEtfRecord(c); totalShares+=r.shares; totalAnnual+=r.shares*r.annual; totalValue+=r.shares*r.price; });
+  var codes = Object.keys(ETF_DEFAULTS), totalShares=0, totalAnnual=0, totalValue=0, totalCost=0;
+  codes.forEach(function(c){ var r=getEtfRecord(c); totalShares+=r.shares; totalAnnual+=r.shares*r.annual; totalValue+=r.shares*r.price; totalCost+=r.totalCost; });
   var totalYield = totalValue>0 ? totalAnnual/totalValue*100 : 0;
   var monthMap = {'0050':[1,7],'0056':[1,4,7,10],'00878':[2,5,8,11],'00919':[3,6,9,12]};
   var monthRows = [];
@@ -2084,31 +2084,33 @@ function renderEtfCashflow() {
   if(cal)cal.innerHTML='<div style="font-size:12px;font-weight:800;margin:4px 0 7px">📅 每月預估股利入帳月份（均分估算）</div><div class="tbl-wrap"><table><thead><tr><th>月份</th><th>預估來源</th><th>當月預估</th></tr></thead><tbody>'+monthRows.join('')+'</tbody></table></div><div style="font-size:10px;color:var(--muted);margin-top:5px">依各ETF常見配息月份分配；將每檔年度配息平均分攤到該檔配息次數，僅供退休現金流規劃，不代表實際每次公告金額或發放月份。</div>';
   summary.innerHTML = [
     ['四檔合計市值', '$'+Math.round(totalValue).toLocaleString('en-US')],
+    ['四檔持倉總成本', '$'+Math.round(totalCost).toLocaleString('en-US')],
     ['預估年股利', '$'+Math.round(totalAnnual).toLocaleString('en-US')],
     ['月平均股利', '$'+Math.round(totalAnnual/12).toLocaleString('en-US')],
     ['整體預估殖利率', totalValue>0?totalYield.toFixed(2)+'%':'—']
   ].map(function(x){return '<div class="mc"><div class="mc-l">'+x[0]+'</div><div class="mc-v">'+x[1]+'</div></div>';}).join('');
   tabs.innerHTML = codes.map(function(c){return '<button onclick="selectEtf(\''+c+'\')" style="padding:7px 12px;border-radius:8px;border:1px solid '+(activeEtfCode===c?'rgba(52,211,153,.65)':'var(--border2)')+';background:'+(activeEtfCode===c?'rgba(52,211,153,.13)':'var(--bg2)')+';color:'+(activeEtfCode===c?'#34d399':'var(--text)')+';font-weight:700;cursor:pointer">'+c+'</button>';}).join('');
-  var r=getEtfRecord(activeEtfCode), annualCash=r.shares*r.annual, yieldPct=r.price>0?r.annual/r.price*100:0;
+  var r=getEtfRecord(activeEtfCode), annualCash=r.shares*r.annual, marketValue=r.shares*r.price, avgCost=r.shares>0&&r.totalCost>0?r.totalCost/r.shares:0, unrealized=marketValue-r.totalCost, returnPct=r.totalCost>0?unrealized/r.totalCost*100:0, yieldPct=r.price>0?r.annual/r.price*100:0, yieldOnCost=avgCost>0?r.annual/avgCost*100:0;
   detail.innerHTML = '<div style="font-weight:800;font-size:14px;margin-bottom:10px">'+activeEtfCode+'｜'+r.name+'</div>'+
     '<div class="metrics" style="margin-bottom:12px">'+[
-      ['持有股數',r.shares.toLocaleString('en-US')+' 股'],['預估年股利','$'+Math.round(annualCash).toLocaleString('en-US')],['月平均','$'+Math.round(annualCash/12).toLocaleString('en-US')],['預估殖利率',yieldPct.toFixed(2)+'%']
+      ['持有股數',r.shares.toLocaleString('en-US')+' 股'],['持倉總成本',r.totalCost?'$'+Math.round(r.totalCost).toLocaleString('en-US'):'尚未輸入'],['平均成本',avgCost?'$'+avgCost.toFixed(2):'—'],['目前市值','$'+Math.round(marketValue).toLocaleString('en-US')],['未實現損益',r.totalCost?(unrealized>=0?'+$':'-$')+Math.round(Math.abs(unrealized)).toLocaleString('en-US'):'尚未輸入成本'],['報酬率',r.totalCost?(returnPct>=0?'+':'')+returnPct.toFixed(2)+'%':'—'],['預估年股利','$'+Math.round(annualCash).toLocaleString('en-US')],['月平均','$'+Math.round(annualCash/12).toLocaleString('en-US')],['市價殖利率',yieldPct.toFixed(2)+'%'],['成本殖利率',yieldOnCost?yieldOnCost.toFixed(2)+'%':'—']
     ].map(function(x){return '<div class="mc"><div class="mc-l">'+x[0]+'</div><div class="mc-v">'+x[1]+'</div></div>';}).join('')+'</div>'+
     '<div class="form-grid">'+
     '<div class="fg"><label>持有股數（股）</label><input id="etf-shares" type="number" min="0" step="1" value="'+r.shares+'"></div>'+
+    '<div class="fg"><label>持倉總成本（元，含手續費）</label><input id="etf-total-cost" type="number" min="0" step="1" value="'+r.totalCost+'" placeholder="輸入累計投入成本"></div>'+
     '<div class="fg"><label>參考股價（元）</label><input id="etf-price" type="number" min="0" step="0.01" value="'+r.price.toFixed(2)+'"></div>'+
     '<div class="fg"><label>每單位年度配息假設（元）</label><input id="etf-annual" type="number" min="0" step="0.001" value="'+r.annual.toFixed(3)+'"></div>'+
     '<div class="fg"><label>配息頻率／月份</label><input value="'+r.frequency+'｜'+r.months+'" disabled></div></div>'+
     '<div style="display:flex;gap:8px;align-items:center;margin-top:12px"><button onclick="saveEtfHolding(\''+activeEtfCode+'\')" class="sbtn" style="background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.35);color:#34d399">💾 儲存 '+activeEtfCode+'</button><span id="etf-save-msg" class="form-msg"></span></div>'+
-    '<div style="font-size:10.5px;color:var(--muted);margin-top:8px">計算方式：年股利＝持有股數 × 每單位年度配息；月平均＝年股利 ÷ 12；殖利率＝每單位年度配息 ÷ 參考股價。實際領息月份依除息及發放日為準。</div>';
+    '<div style="font-size:10.5px;color:var(--muted);margin-top:8px">計算方式：平均成本＝持倉總成本 ÷ 股數；未實現損益＝股數 × 參考股價 − 持倉總成本；報酬率＝未實現損益 ÷ 持倉總成本。股利殖利率另列參考市價殖利率及成本殖利率。持倉總成本請輸入累計實際投入金額，建議含手續費。</div>';
 }
 window.selectEtf = function(code){ if(!ETF_DEFAULTS[code])return; activeEtfCode=code; renderEtfCashflow(); };
 window.saveEtfHolding = async function(code){
   if(!canEdit){alert('目前為唯讀模式，請使用 ?edit=pudding2026 編輯');return;}
   if(_isOfflineMode){alert('目前離線，為避免舊資料覆蓋雲端，暫不儲存。請恢復連線後重整。');return;}
-  var shares=Number(document.getElementById('etf-shares').value), price=Number(document.getElementById('etf-price').value), annual=Number(document.getElementById('etf-annual').value);
-  if(![shares,price,annual].every(Number.isFinite)||shares<0||price<=0||annual<0){alert('請確認股數、股價及年配息皆為有效非負數，股價需大於0');return;}
-  DATA.ETF=DATA.ETF||{}; DATA.ETF[code]={shares:shares,price:price,annual:annual,updatedAt:fmtToday()};
+  var shares=Number(document.getElementById('etf-shares').value), totalCost=Number(document.getElementById('etf-total-cost').value), price=Number(document.getElementById('etf-price').value), annual=Number(document.getElementById('etf-annual').value);
+  if(![shares,totalCost,price,annual].every(Number.isFinite)||shares<0||totalCost<0||price<=0||annual<0){alert('請確認股數、持倉總成本、股價及年配息皆為有效非負數，股價需大於0');return;}
+  DATA.ETF=DATA.ETF||{}; DATA.ETF[code]={shares:shares,totalCost:totalCost,price:price,annual:annual,updatedAt:fmtToday()};
   await saveData(); renderEtfCashflow();
   var msg=document.getElementById('etf-save-msg'); if(msg)msg.textContent='已儲存至雲端';
 };
