@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d0f14">
 <title>策略儀表板｜W1</title>
-<!-- BUILD_VERSION: W1-2026-11-11-01（資產管理簡化：五帳戶權益＋單一 QFF 持倉） -->
-<meta name="build-version" content="W1-2026-11-11-01">
+<!-- BUILD_VERSION: W1-2026-11-18-02（新增退休股利現金流＋大盤週期白話解讀；保留舊紀錄） -->
+<meta name="build-version" content="W1-2026-11-18-02">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1142,6 +1142,18 @@ body.readonly .am-edit-only{display:none!important;}
   <div style="padding:12px 0 6px;font-size:12px;color:var(--muted)">
     長期投資　｜　2330 台積電核心持倉　｜　2330 期初資金 $500,000
   </div>
+  <!-- 新增：退休股利現金流管理（與既有2330/00662帳務分開） -->
+  <div class="card" style="margin:12px 0;border:1px solid rgba(52,211,153,.32)">
+    <div class="card-hd" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><span>💰 ETF退休現金流｜0050・0056・00878・00919</span><span style="font-size:10px;color:var(--muted)">獨立新增模組，不更動原有持倉</span></div>
+    <div class="card-bd">
+      <div id="etf-cashflow-summary" class="metrics"></div>
+      <div id="etf-monthly-calendar" style="margin:12px 0"></div>
+      <div style="font-size:11px;color:var(--muted2);line-height:1.8;margin:8px 0 12px">輸入各檔持有股數，系統依「每單位近年/年度配息 × 股數」估算年度股利，並換算月平均。配息不是固定利息，實際金額會變動；殖利率以年度配息 ÷ 參考股價計算。</div>
+      <div id="etf-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <div id="etf-detail"></div>
+      <div style="font-size:10px;color:var(--muted);line-height:1.7;margin-top:10px">參考基準：2026年已公告/已發放配息（0050：1.60元、0056：4.936元、00878：3.34元、00919：3.42元）；參考股價為2026/11/17收盤。這是估算基準，不代表未來保證配息。可在各檔頁籤自行更新股價與年配息假設。</div>
+    </div>
+  </div>
   <div style="padding:6px 0 2px">
     <div style="font-size:11px;color:var(--muted);margin:0 0 6px 2px;font-weight:700">🟢 2330 台積電</div>
     <div class="metrics" id="metrics-T"></div>
@@ -1241,6 +1253,24 @@ body.readonly .am-edit-only{display:none!important;}
     <b style="color:#bfdbfe">邏輯說明：</b>大盤（TWII）每創歷史新高，自動記一筆灰K／黃K／台積電持股市值與獲利%快照；當大盤從最高點回檔每觸及 10%／15%／20%／25%／30% 其中一個級距，就各自動記一筆各持股回檔%，並算出「倍數」＝持股回檔% ÷ 大盤回檔%（00631L 理論槓桿2倍，落在約1.8x~2.3x屬正常，明顯偏離會標記檢討）。每個級距只在同一次回檔中記錄一次，等大盤再創新高後才會重新武裝。長期累積可回頭檢視策略是否與大盤週期脫鉤。
   </div>
 
+  <!-- 新增白話版週期判讀：不修改下方原有歷史紀錄與表格 -->
+  <div class="card" style="margin:12px 0;border:1px solid rgba(96,165,250,.35)">
+    <div class="card-hd">🧭 大盤現在在哪個階段？｜白話版</div>
+    <div class="card-bd">
+      <div id="mkt-simple-status" style="font-size:17px;font-weight:800;margin-bottom:8px">等待大盤報價與歷史高點資料…</div>
+      <div id="mkt-simple-explain" style="font-size:12px;color:var(--muted2);line-height:1.9"></div>
+      <div class="tbl-wrap" style="margin-top:12px"><table><thead><tr><th>從歷史高點跌幅</th><th>白話分類</th><th>你可以怎麼理解</th></tr></thead><tbody>
+        <tr><td>0% ～ -5%</td><td style="color:#34d399">正常震盪</td><td>離高點不遠，仍屬一般市場波動</td></tr>
+        <tr><td>-5% ～ -10%</td><td style="color:#60a5fa">小幅修正</td><td>市場轉弱，先觀察，不等於熊市</td></tr>
+        <tr><td>-10% ～ -15%</td><td style="color:#fbbf24">中度回檔</td><td>進入警戒區，檢查持倉與資金風險</td></tr>
+        <tr><td>-15% ～ -20%</td><td style="color:#fb923c">較深回檔</td><td>波動明顯放大，避免只因跌深就加碼</td></tr>
+        <tr><td>-20% ～ -30%</td><td style="color:#f87171">深度修正</td><td>優先控管槓桿與最大可承受損失</td></tr>
+        <tr><td>低於 -30%</td><td style="color:#dc2626">重大空頭風險</td><td>重新評估整體曝險，必要時降低風險</td></tr>
+      </tbody></table></div>
+      <div style="font-size:10.5px;color:var(--muted);line-height:1.7;margin-top:8px">注意：這是儀表板的風險溝通分級，不是預測市場，也不是自動買賣訊號。回檔%＝（目前加權指數－系統記錄的歷史最高點）÷ 歷史最高點。</div>
+    </div>
+  </div>
+
   <div class="metrics" id="metrics-M"></div>
 
   <div class="card">
@@ -1287,7 +1317,7 @@ body.readonly .am-edit-only{display:none!important;}
 </div>
 
 
-<div class="footer">策略儀表板 · 00631L 元大台灣50正2 · 2330 台積電 · 00662 NQ 長期投資 · ☁️ Firebase 雲端同步 · 報價延遲15-20分鐘 · 僅供參考</div>
+<div class="footer">策略儀表板 · 00631L 元大台灣50正2 · 2330 台積電 · 00662 NQ 長期投資 · ETF退休股利現金流 · ☁️ Firebase 雲端同步 · 報價延遲15-20分鐘 · 僅供參考</div>
 
 <!-- ══ Firebase + 主程式 ══ -->
 <script>
@@ -1305,7 +1335,7 @@ body.readonly .am-edit-only{display:none!important;}
    'delTxf','editTxf','delTxfGroup',
    'openMktAthModal','saveMktAthManual','deleteMktAthRecord',
    'openMktDdModal','saveMktDdManual','deleteMktDdRecord',
-   'clearSignalHistory'].forEach(makeQueued);
+   'clearSignalHistory','selectEtf','saveEtfHolding'].forEach(makeQueued);
 })();
 </script>
 <script type="module">
@@ -1328,6 +1358,13 @@ const DOC_REF = doc(db, 'dashboard', '00631L');
 
 // ── 預設資料 ──
 const DEFAULT_NQ = {shares:3000,cost:232030,price:39.0723333333,pnl:-114813,trades:[]};
+// ETF退休股利現金流：年配息預設採2026年已公告/已發放金額，股數由使用者輸入；價格為2026/11/17參考收盤，均可自行更新。
+const ETF_DEFAULTS = {
+  '0050':{name:'元大台灣50',price:94.00,annual:1.60,frequency:'半年配',months:'1、7月'},
+  '0056':{name:'元大高股息',price:49.92,annual:4.936,frequency:'季配',months:'1、4、7、10月'},
+  '00878':{name:'國泰永續高股息',price:30.86,annual:3.34,frequency:'季配',months:'2、5、8、11月'},
+  '00919':{name:'群益台灣精選高息',price:30.39,annual:3.42,frequency:'季配',months:'3、6、9、12月'}
+};
 
 const DEFAULT_DATA = {
   C: [
@@ -1534,7 +1571,7 @@ function normalizeDDates(dataObj) {
   });
 }
 
-let DATA = { G:[], Y:[], C:[], T:[], D:[], D_io:[], D_eq:[], PL:[], RC:{}, RB:null, AM:{accounts:[],futuresAccounts:[],qff:{accountId:'F1',direction:'LONG',lots:10,multiplier:100,contractMonth:'',entryPrice:null,currentPrice:null},brokerCash:0,brokerDate:'',cashFlows:[],snapshots:[]}, MKT:{ ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
+let DATA = { G:[], Y:[], C:[], T:[], ETF:{}, D:[], D_io:[], D_eq:[], PL:[], RC:{}, RB:null, AM:{accounts:[],futuresAccounts:[],qff:{accountId:'F1',direction:'LONG',lots:10,multiplier:100,contractMonth:'',entryPrice:null,currentPrice:null},brokerCash:0,brokerDate:'',cashFlows:[],snapshots:[]}, MKT:{ ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
 let expanded = { G:{}, Y:{}, T:{} };
 let expandedC = {};
 let editState = { s:'G', idx:-1, mode:'', fixBatch:'' };
@@ -1694,7 +1731,7 @@ async function initData() {
     const snap = await getDoc(DOC_REF);
     if (snap.exists()) {
       const d = snap.data();
-      DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], AM: normalizeAssetData(d.AM), NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : Object.assign({}, DEFAULT_NQ), RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
+      DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], ETF: d.ETF || {}, D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], AM: normalizeAssetData(d.AM), NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : Object.assign({}, DEFAULT_NQ), RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
       // 一次性搬移：若 Firebase 尚無 PL/RC/RB 但本機 localStorage 有舊紀錄，搬過去並清空本機
       try {
         if ((!DATA.PL || !DATA.PL.length)) {
@@ -1736,7 +1773,7 @@ async function initData() {
         DATA.D    = JSON.parse(JSON.stringify(DEFAULT_DATA.D));
         DATA.D_io = JSON.parse(JSON.stringify(DEFAULT_DATA.D_io));
         DATA.D_eq = JSON.parse(JSON.stringify(DEFAULT_DATA.D_eq));
-        await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C, T: DATA.T, D: DATA.D, D_io: DATA.D_io, D_eq: DATA.D_eq, PL: DATA.PL||[], AM: normalizeAssetData(DATA.AM), NQ: (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : Object.assign({}, DEFAULT_NQ), RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
+        await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C, T: DATA.T, ETF: DATA.ETF||{}, D: DATA.D, D_io: DATA.D_io, D_eq: DATA.D_eq, PL: DATA.PL||[], AM: normalizeAssetData(DATA.AM), NQ: (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : Object.assign({}, DEFAULT_NQ), RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
       }
     } else {
       DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
@@ -1744,11 +1781,11 @@ async function initData() {
       DATA.AM = normalizeAssetData(DATA.AM);
       await setDoc(DOC_REF, DATA);
     }
-    if (!DATA.NQ || Array.isArray(DATA.NQ)) DATA.NQ=Object.assign({}, DEFAULT_NQ); getNQData();
+    if (!DATA.NQ || Array.isArray(DATA.NQ)) DATA.NQ=Object.assign({}, DEFAULT_NQ); if(!DATA.ETF) DATA.ETF={}; getNQData();
     setCloudStatus('connected', '已連線 · 即時同步中');
     _mktReady = true; // ✅ Firebase 資料已確認載入完成，大盤週期功能可以開始運作
     _isOfflineMode = false; // ✅ 確認是雲端最新資料，允許正常存檔
-    renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderNQ(); renderOpenPositions(); renderSummary(); if (typeof renderMarketCycle==="function") renderMarketCycle();
+    renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderEtfCashflow(); renderNQ(); renderOpenPositions(); renderSummary(); if (typeof renderMarketCycle==="function") renderMarketCycle();
 
     // 即時監聽（其他裝置改動時自動更新）
     onSnapshot(DOC_REF, snap => {
@@ -1756,12 +1793,12 @@ async function initData() {
         const d = snap.data();
         // 只在非本機儲存觸發時才更新（避免自己觸發自己）
         if (!isSaving) {
-          DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], AM: normalizeAssetData(d.AM), NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : Object.assign({}, DEFAULT_NQ), RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
+          DATA = { G: d.G || [], Y: d.Y || [], C: d.C || [], T: d.T || [], ETF: d.ETF || {}, D: d.D || [], D_io: d.D_io || [], D_eq: d.D_eq || [], PL: d.PL || [], AM: normalizeAssetData(d.AM), NQ: (d.NQ && !Array.isArray(d.NQ)) ? d.NQ : Object.assign({}, DEFAULT_NQ), RC: d.RC || {}, RB: d.RB || null, MKT: d.MKT || { ath:null, athHistory:[], ddHistory:[], ddRef:null, ddTriggered:{} } };
           normalizeDDates(DATA);
           _rebalCapital = DATA.RC || {};
           _mktReady = true;
           _isOfflineMode = false; // ✅ 即時監聽收到伺服器最新資料，確認不是離線狀態
-          renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderNQ(); renderOpenPositions(); renderPoolLog(); renderSummary(); renderRebalCapitalForm(); renderAssetManagement(); if (typeof renderMarketCycle==="function") renderMarketCycle();
+          renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderEtfCashflow(); renderNQ(); renderOpenPositions(); renderPoolLog(); renderSummary(); renderRebalCapitalForm(); renderAssetManagement(); if (typeof renderMarketCycle==="function") renderMarketCycle();
         }
         setCloudStatus('connected', '已連線 · 即時同步中');
       }
@@ -1781,7 +1818,7 @@ async function initData() {
     }
     _mktReady = true; // 離線也算「已確認狀態」，避免卡住；但此時資料是本機備援，非雲端最新版
     _isOfflineMode = true; // ⚠️ 目前是本機備援資料，非雲端最新版，禁止存檔避免覆蓋掉雲端較新的資料
-    renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderNQ(); renderOpenPositions(); renderSummary(); if (typeof renderMarketCycle==="function") renderMarketCycle();
+    renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderEtfCashflow(); renderNQ(); renderOpenPositions(); renderSummary(); if (typeof renderMarketCycle==="function") renderMarketCycle();
   }
 }
 
@@ -1917,7 +1954,7 @@ window.doRestoreBackup = function(idx) {
     renderRebalCapitalForm();
   }
   saveData();
-  renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderNQ(); renderOpenPositions(); renderSummary(); if (typeof renderMarketCycle==="function") renderMarketCycle();
+  renderAll('G'); renderAll('Y'); renderAll('C'); renderAll('T'); renderEtfCashflow(); renderNQ(); renderOpenPositions(); renderSummary(); if (typeof renderMarketCycle==="function") renderMarketCycle();
   document.getElementById('backupModal').style.display = 'none';
 };
 
@@ -1934,7 +1971,7 @@ async function saveData() {
   isSaving = true;
   setCloudStatus('syncing', '同步中…');
   try {
-    await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C||[], T: DATA.T||[], D: DATA.D||[], D_io: DATA.D_io||[], D_eq: DATA.D_eq||[], PL: DATA.PL||[], AM: normalizeAssetData(DATA.AM), NQ: (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : Object.assign({}, DEFAULT_NQ), RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
+    await setDoc(DOC_REF, { G: DATA.G, Y: DATA.Y, C: DATA.C||[], T: DATA.T||[], ETF: DATA.ETF||{}, D: DATA.D||[], D_io: DATA.D_io||[], D_eq: DATA.D_eq||[], PL: DATA.PL||[], AM: normalizeAssetData(DATA.AM), NQ: (DATA.NQ && !Array.isArray(DATA.NQ)) ? DATA.NQ : Object.assign({}, DEFAULT_NQ), RC: DATA.RC||{}, RB: DATA.RB||null }, { merge: true }); // ⚠️ 不寫 MKT 欄位，大盤週期資料只透過專用 transaction 讀寫，避免一般存檔覆蓋掉
     localStorage.setItem('dashboard_00631L_data', JSON.stringify(DATA));
     setCloudStatus('connected', '已連線 · 即時同步中');
     updateSyncTimestamp(true);
@@ -1980,6 +2017,61 @@ function groupData(s) {
   });
 }
 
+// ══ ETF退休股利現金流（獨立ETF欄位，寫入Firestore ETF，不碰原有交易資料）══
+var activeEtfCode = '0050';
+function getEtfRecord(code) {
+  var base = ETF_DEFAULTS[code];
+  var saved = (DATA.ETF && DATA.ETF[code]) || {};
+  return { shares:Number(saved.shares)||0, price:Number(saved.price)||base.price, annual:Number(saved.annual)||base.annual, name:base.name, frequency:base.frequency, months:base.months };
+}
+function renderEtfCashflow() {
+  var summary = document.getElementById('etf-cashflow-summary');
+  var tabs = document.getElementById('etf-tabs');
+  var detail = document.getElementById('etf-detail');
+  if (!summary || !tabs || !detail) return;
+  var codes = Object.keys(ETF_DEFAULTS), totalShares=0, totalAnnual=0, totalValue=0;
+  codes.forEach(function(c){ var r=getEtfRecord(c); totalShares+=r.shares; totalAnnual+=r.shares*r.annual; totalValue+=r.shares*r.price; });
+  var totalYield = totalValue>0 ? totalAnnual/totalValue*100 : 0;
+  var monthMap = {'0050':[1,7],'0056':[1,4,7,10],'00878':[2,5,8,11],'00919':[3,6,9,12]};
+  var monthRows = [];
+  for(var mi=1;mi<=12;mi++){
+    var pieces=[]; var monthTotal=0;
+    codes.forEach(function(c){var rr=getEtfRecord(c);if(monthMap[c].indexOf(mi)>=0){var part=rr.shares*rr.annual/monthMap[c].length;monthTotal+=part;if(part>0)pieces.push(c+' $'+Math.round(part).toLocaleString('en-US'));}});
+    monthRows.push('<tr><td>'+mi+'月</td><td>'+(pieces.length?pieces.join('、'):'—')+'</td><td style="font-weight:800">'+(monthTotal?'$'+Math.round(monthTotal).toLocaleString('en-US'):'—')+'</td></tr>');
+  }
+  var cal=document.getElementById('etf-monthly-calendar');
+  if(cal)cal.innerHTML='<div style="font-size:12px;font-weight:800;margin:4px 0 7px">📅 每月預估股利入帳月份（均分估算）</div><div class="tbl-wrap"><table><thead><tr><th>月份</th><th>預估來源</th><th>當月預估</th></tr></thead><tbody>'+monthRows.join('')+'</tbody></table></div><div style="font-size:10px;color:var(--muted);margin-top:5px">依各ETF常見配息月份分配；將每檔年度配息平均分攤到該檔配息次數，僅供退休現金流規劃，不代表實際每次公告金額或發放月份。</div>';
+  summary.innerHTML = [
+    ['四檔合計市值', '$'+Math.round(totalValue).toLocaleString('en-US')],
+    ['預估年股利', '$'+Math.round(totalAnnual).toLocaleString('en-US')],
+    ['月平均股利', '$'+Math.round(totalAnnual/12).toLocaleString('en-US')],
+    ['整體預估殖利率', totalValue>0?totalYield.toFixed(2)+'%':'—']
+  ].map(function(x){return '<div class="mc"><div class="mc-l">'+x[0]+'</div><div class="mc-v">'+x[1]+'</div></div>';}).join('');
+  tabs.innerHTML = codes.map(function(c){return '<button onclick="selectEtf(\''+c+'\')" style="padding:7px 12px;border-radius:8px;border:1px solid '+(activeEtfCode===c?'rgba(52,211,153,.65)':'var(--border2)')+';background:'+(activeEtfCode===c?'rgba(52,211,153,.13)':'var(--bg2)')+';color:'+(activeEtfCode===c?'#34d399':'var(--text)')+';font-weight:700;cursor:pointer">'+c+'</button>';}).join('');
+  var r=getEtfRecord(activeEtfCode), annualCash=r.shares*r.annual, yieldPct=r.price>0?r.annual/r.price*100:0;
+  detail.innerHTML = '<div style="font-weight:800;font-size:14px;margin-bottom:10px">'+activeEtfCode+'｜'+r.name+'</div>'+
+    '<div class="metrics" style="margin-bottom:12px">'+[
+      ['持有股數',r.shares.toLocaleString('en-US')+' 股'],['預估年股利','$'+Math.round(annualCash).toLocaleString('en-US')],['月平均','$'+Math.round(annualCash/12).toLocaleString('en-US')],['預估殖利率',yieldPct.toFixed(2)+'%']
+    ].map(function(x){return '<div class="mc"><div class="mc-l">'+x[0]+'</div><div class="mc-v">'+x[1]+'</div></div>';}).join('')+'</div>'+
+    '<div class="form-grid">'+
+    '<div class="fg"><label>持有股數（股）</label><input id="etf-shares" type="number" min="0" step="1" value="'+r.shares+'"></div>'+
+    '<div class="fg"><label>參考股價（元）</label><input id="etf-price" type="number" min="0" step="0.01" value="'+r.price.toFixed(2)+'"></div>'+
+    '<div class="fg"><label>每單位年度配息假設（元）</label><input id="etf-annual" type="number" min="0" step="0.001" value="'+r.annual.toFixed(3)+'"></div>'+
+    '<div class="fg"><label>配息頻率／月份</label><input value="'+r.frequency+'｜'+r.months+'" disabled></div></div>'+
+    '<div style="display:flex;gap:8px;align-items:center;margin-top:12px"><button onclick="saveEtfHolding(\''+activeEtfCode+'\')" class="sbtn" style="background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.35);color:#34d399">💾 儲存 '+activeEtfCode+'</button><span id="etf-save-msg" class="form-msg"></span></div>'+
+    '<div style="font-size:10.5px;color:var(--muted);margin-top:8px">計算方式：年股利＝持有股數 × 每單位年度配息；月平均＝年股利 ÷ 12；殖利率＝每單位年度配息 ÷ 參考股價。實際領息月份依除息及發放日為準。</div>';
+}
+window.selectEtf = function(code){ if(!ETF_DEFAULTS[code])return; activeEtfCode=code; renderEtfCashflow(); };
+window.saveEtfHolding = async function(code){
+  if(!canEdit){alert('目前為唯讀模式，請使用 ?edit=pudding2026 編輯');return;}
+  if(_isOfflineMode){alert('目前離線，為避免舊資料覆蓋雲端，暫不儲存。請恢復連線後重整。');return;}
+  var shares=Number(document.getElementById('etf-shares').value), price=Number(document.getElementById('etf-price').value), annual=Number(document.getElementById('etf-annual').value);
+  if(![shares,price,annual].every(Number.isFinite)||shares<0||price<=0||annual<0){alert('請確認股數、股價及年配息皆為有效非負數，股價需大於0');return;}
+  DATA.ETF=DATA.ETF||{}; DATA.ETF[code]={shares:shares,price:price,annual:annual,updatedAt:fmtToday()};
+  await saveData(); renderEtfCashflow();
+  var msg=document.getElementById('etf-save-msg'); if(msg)msg.textContent='已儲存至雲端';
+};
+
 // ══ 面板切換 ══
 window.switchPanel = function(s) {
   ['H','F','G','Y','C','T','N','D','M'].forEach(p => {
@@ -1995,6 +2087,7 @@ window.switchPanel = function(s) {
     }, 80);
   }
   if (s === 'M' && typeof renderMarketCycle === 'function') renderMarketCycle();
+  if (s === 'T' && typeof renderEtfCashflow === 'function') renderEtfCashflow();
   document.getElementById('sw-H').className = 'stab'+(s==='H'?' on-home':'');
   const swF = document.getElementById('sw-F'); if(swF) swF.className = 'stab'+(s==='F'?' on-fund':'');
   document.getElementById('sw-G').className = 'stab'+(s==='G'?' on-gray':'');
@@ -5881,6 +5974,22 @@ function renderMarketCycle() {
 
   // 指標卡
   var curPct = mkt.ath ? (TWII_PRICE - mkt.ath) / mkt.ath * 100 : null;
+  var simpleStatus=document.getElementById('mkt-simple-status');
+  var simpleExplain=document.getElementById('mkt-simple-explain');
+  if(simpleStatus && simpleExplain){
+    if(curPct===null || !TWII_PRICE){simpleStatus.textContent='等待有效的大盤報價與歷史高點';simpleExplain.textContent='系統需要先取得加權指數現價，並有至少一筆歷史高點，才能計算目前回檔幅度。';}
+    else {
+      var a=Math.max(0,Math.abs(Math.min(0,curPct))), label, color, advice;
+      if(a<5){label='🟢 正常震盪';color='#34d399';advice='目前距離系統記錄高點 '+a.toFixed(2)+'%。這個幅度通常仍屬正常波動；不代表沒有風險，也不構成買進訊號。'}
+      else if(a<10){label='🔵 小幅修正';color='#60a5fa';advice='目前回檔 '+a.toFixed(2)+'%。市場已較高點轉弱，先觀察趨勢與持倉，不要把「跌了一些」直接當成便宜。'}
+      else if(a<15){label='🟡 中度回檔';color='#fbbf24';advice='目前回檔 '+a.toFixed(2)+'%，已進入原系統10%警戒區。檢查槓桿部位、可用現金及停損規則，避免一次投入過多。'}
+      else if(a<20){label='🟠 較深回檔';color='#fb923c';advice='目前回檔 '+a.toFixed(2)+'%。波動風險升高，優先確認整體曝險、持倉跌幅是否超過大盤，以及資金是否足以承受續跌。'}
+      else if(a<30){label='🔴 深度修正';color='#f87171';advice='目前回檔 '+a.toFixed(2)+'%。應先管理風險與槓桿，重新檢視資產配置；不要只因跌幅大就自動攤平。'}
+      else {label='🚨 重大空頭風險';color='#dc2626';advice='目前回檔 '+a.toFixed(2)+'%。屬極端壓力情境，優先保留流動性、檢視槓桿與最大可承受損失，必要時降低曝險。'}
+      simpleStatus.textContent=label+'｜距歷史高點 '+a.toFixed(2)+'%';simpleStatus.style.color=color;
+      simpleExplain.innerHTML='目前加權指數：<b>'+fmt(TWII_PRICE)+'</b>；系統記錄高點：<b>'+fmt(mkt.ath)+'</b>。<br>'+advice+'<br><span style="color:var(--muted)">此處是風險分級說明，不會自動替你下單，也不會刪除或改寫下方歷史紀錄。</span>';
+    }
+  }
   var snapNow = buildHoldingSnapshot();
   var statusHtml, statusCls;
   if (curPct === null) { statusHtml = '尚無資料'; statusCls = 'neu'; }
