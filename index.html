@@ -6,9 +6,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d0f14">
-<title>策略儀表板｜W5</title>
-<!-- BUILD_VERSION: W6-2026-11-18-01（ETF進出場日期、頂部持倉明細、底部批次交易紀錄及總覽同步） -->
-<meta name="build-version" content="W5-2026-11-18-01">
+<title>策略儀表板｜W7</title>
+<!-- BUILD_VERSION: W7-2026-11-18-01（交易獲利來源、分配連結、ETF去向及未分配餘額追蹤） -->
+<meta name="build-version" content="W7-2026-11-18-01">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -663,7 +663,7 @@ body.readonly .am-edit-only{display:none!important;}
 
 <!-- ── 頂部導覽 ── -->
 <div class="topbar">
-  <div class="topbar-logo">策略儀表板 <span>W5｜資產管理</span></div>
+  <div class="topbar-logo">策略儀表板 <span>W7｜獲利轉存股追蹤</span></div>
   <div class="topbar-right">
     <span class="readonly-badge">👁 唯讀</span><span class="market-time" id="mktTime">—</span>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="切換亮/暗主題">🌙</button>
@@ -771,12 +771,6 @@ body.readonly .am-edit-only{display:none!important;}
     </div>
   </div>
 
-  <!-- ── ETF 持倉總覽（與長期投資頁同步） ── -->
-  <div class="card" id="etf-overview-card" style="margin-bottom:14px">
-    <div class="card-hd">💰 ETF 持倉總覽｜0050・0056・00878・00919</div>
-    <div class="card-bd" style="padding:10px 14px"><div id="etf-overview-summary"></div></div>
-  </div>
-
   <!-- ── 資金配置 ── -->
   <div class="card" style="margin-bottom:14px">
     <div class="card-hd">💰 資金配置</div>
@@ -805,7 +799,7 @@ body.readonly .am-edit-only{display:none!important;}
 
 </div><!-- /panel-H -->
 
-<!-- ══ 資產管理面板｜W1 ══ -->
+<!-- ══ 資產管理面板｜W7：獲利來源與分配追蹤 ══ -->
 <div class="panel" id="panel-F">
   <div style="padding:12px 0 10px;font-size:12px;color:var(--muted)">
     資產總覽　｜　五個期貨帳戶權益　｜　銀行餘額　｜　台積電小型期貨曝險　｜　資金流向
@@ -860,20 +854,23 @@ body.readonly .am-edit-only{display:none!important;}
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-hd">🔄 獲利資金流向 <span style="font-size:10px;color:var(--muted);font-weight:400">記錄已實現獲利最後用途</span></div>
+  <div class="card" id="am-profit-tracker">
+    <div class="card-hd">💰 交易獲利 → 長期存股追蹤 <span style="font-size:10px;color:var(--muted);font-weight:400">先登記獲利，再記錄實際分配去向</span></div>
     <div class="card-bd">
+      <div class="am-note" style="margin:0 0 12px">操作示範：先選「獲利入帳」，日期填 2026/10/31、來源選「台積電交易獲利」、金額填 279858，按新增。之後切換「獲利分配」，選取這筆台積電獲利、去向選 0050 或其他 ETF、填實際投入金額。系統會扣除已分配金額，顯示剩餘獲利。這只是操作範例，不會預先寫入你的帳戶。</div>
       <div class="am-form-grid am-edit-only">
+        <div class="am-field"><label>紀錄類型</label><select class="am-input" id="am-flow-kind" onchange="setCashFlowMode()"><option value="profit">獲利入帳（先記錄賺多少）</option><option value="allocation">獲利分配（記錄錢去了哪）</option></select></div>
         <div class="am-field"><label>日期</label><input class="am-input" id="am-flow-date" type="date"></div>
-        <div class="am-field"><label>資金來源</label><select class="am-input" id="am-flow-source"><option>投資已實現獲利</option><option>投資本金</option><option>薪資／外部收入</option><option>其他收入</option></select></div>
-        <div class="am-field"><label>資金去向</label><select class="am-input" id="am-flow-destination"><option>再投入股票／ETF</option><option>期貨帳戶增資</option><option>銀行存款／保留現金</option><option>生活支出</option><option>貸款／負債</option><option>帳戶間轉帳</option><option>其他用途</option></select></div>
+        <div class="am-field" id="am-flow-source-wrap"><label>獲利來源</label><select class="am-input" id="am-flow-source"><option value="台積電交易獲利">台積電交易獲利</option><option value="期貨交易獲利">期貨交易獲利</option><option value="其他交易獲利">其他交易獲利</option></select></div>
+        <div class="am-field" id="am-flow-profit-wrap" style="display:none"><label>這筆分配來自哪筆獲利</label><select class="am-input" id="am-flow-profit-ref"><option value="">尚無可分配獲利</option></select></div>
+        <div class="am-field" id="am-flow-destination-wrap" style="display:none"><label>資金去向</label><select class="am-input" id="am-flow-destination"><option value="0050">買進 0050</option><option value="0056">買進 0056</option><option value="00878">買進 00878</option><option value="00919">買進 00919</option><option value="銀行存款／保留現金">留在銀行</option><option value="期貨帳戶增資">轉入期貨帳戶</option><option value="生活支出">生活支出</option><option value="其他用途">其他用途</option></select></div>
         <div class="am-field"><label>金額（元）</label><input class="am-input" id="am-flow-amount" type="number" min="0" step="1" placeholder="輸入正數"></div>
-        <div class="am-field am-field-wide"><label>備註</label><input class="am-input" id="am-flow-note" placeholder="例如：本月已實現獲利提領，用於生活費"></div>
-        <div class="am-field am-field-action"><label>&nbsp;</label><button class="sbtn sbtn-yellow" onclick="addCashFlow()">＋ 新增資金流向</button></div>
+        <div class="am-field am-field-wide"><label>備註／批次說明</label><input class="am-input" id="am-flow-note" placeholder="例如：10/31 台積電已實現淨利，轉存股"></div>
+        <div class="am-field am-field-action"><label>&nbsp;</label><button class="sbtn sbtn-yellow" onclick="addCashFlow()">＋ 新增紀錄</button></div>
       </div>
       <div id="am-flow-summary"></div>
       <div id="am-flow-list"></div>
-      <div class="am-note">這裡是用途分類帳，不會自動增加或扣除帳戶權益。帳戶間轉帳、期貨帳戶增資與投資再投入屬資產內部移動，不當成消費支出或新增獲利。</div>
+      <div class="am-note">重要：獲利入帳只記錄一次；後續買 ETF 是資金用途分配，不會再次算成獲利。此紀錄追蹤獲利來源與用途，不會自動修改銀行餘額或 ETF 持倉股數／成本；實際買進仍需在 ETF 持倉頁另行登記。</div>
     </div>
   </div>
 
@@ -1152,27 +1149,12 @@ body.readonly .am-edit-only{display:none!important;}
   <div class="card" style="margin:12px 0;border:1px solid rgba(52,211,153,.32)">
     <div class="card-hd" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><span>💰 ETF退休現金流｜0050・0056・00878・00919</span><span style="font-size:10px;color:var(--muted)">獨立新增模組，不更動原有持倉</span></div>
     <div class="card-bd">
-      <div style="font-size:12px;font-weight:800;margin:2px 0 7px">📋 ETF 持倉明細｜一眼查看投入成本、月息與目前報酬</div>
-      <div id="etf-holdings-table" style="margin-bottom:12px"></div>
       <div id="etf-cashflow-summary" class="metrics"></div>
       <div id="etf-monthly-calendar" style="margin:12px 0"></div>
       <div style="font-size:11px;color:var(--muted2);line-height:1.8;margin:8px 0 12px">每檔 ETF 分別輸入持有股數與持倉總成本；系統自動計算平均成本、市值、未實現損益、報酬率及股利殖利率。年度配息仍為估算值，實際配息以公告為準。</div>
       <div id="etf-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
       <div id="etf-detail"></div>
       <div style="font-size:10px;color:var(--muted);line-height:1.7;margin-top:10px">參考基準：2026年已公告/已發放配息（0050：1.60元、0056：4.936元、00878：3.34元、00919：3.42元）；參考股價為2026/11/17收盤。這是估算基準，不代表未來保證配息。可在各檔頁籤自行更新股價與年配息假設。</div>
-      <div style="border-top:1px solid var(--border2);margin-top:16px;padding-top:12px">
-        <div style="font-size:13px;font-weight:800;margin-bottom:8px">🧾 批次交易紀錄｜統一放在最下方</div>
-        <div class="form-grid">
-          <div class="fg"><label>ETF</label><select id="etf-trade-code"><option value="0050">0050</option><option value="0056">0056</option><option value="00878">00878</option><option value="00919">00919</option></select></div>
-          <div class="fg"><label>交易類型</label><select id="etf-trade-type"><option value="BUY">買進</option><option value="SELL">賣出</option></select></div>
-          <div class="fg"><label>交易日期</label><input id="etf-trade-date" type="date"></div>
-          <div class="fg"><label>股數</label><input id="etf-trade-shares" type="number" min="1" step="1" placeholder="輸入股數"></div>
-          <div class="fg"><label>成交單價</label><input id="etf-trade-price" type="number" min="0.01" step="0.01" placeholder="輸入成交價"></div>
-          <div class="fg"><label>交易總額／成本（含手續費）</label><input id="etf-trade-amount" type="number" min="0" step="1" placeholder="輸入實際金額"></div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap"><button onclick="addEtfTrade()" class="sbtn" style="background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.35);color:#34d399">＋ 新增交易紀錄</button><span id="etf-trade-msg" class="form-msg"></span></div>
-        <div id="etf-trade-log" style="margin-top:12px"></div>
-      </div>
     </div>
   </div>
   <div style="padding:6px 0 2px">
@@ -1331,7 +1313,7 @@ body.readonly .am-edit-only{display:none!important;}
 </div>
 
 
-<div class="footer">策略儀表板 W6 · 00631L 元大台灣50正2 · 2330 台積電 · 00662 NQ 長期投資 · ETF退休股利現金流 · ☁️ Firebase 雲端同步 · 報價延遲15-20分鐘 · 僅供參考</div>
+<div class="footer">策略儀表板 W7 · 00631L 元大台灣50正2 · 2330 台積電 · 00662 NQ 長期投資 · ETF退休股利現金流 · ☁️ Firebase 雲端同步 · 報價延遲15-20分鐘 · 僅供參考</div>
 
 <!-- ══ Firebase + 主程式 ══ -->
 <script>
@@ -2084,7 +2066,7 @@ var activeEtfCode = '0050';
 function getEtfRecord(code) {
   var base = ETF_DEFAULTS[code];
   var saved = (DATA.ETF && DATA.ETF[code]) || {};
-  return { shares:Number(saved.shares)||0, totalCost:Number(saved.totalCost)||0, price:Number(saved.price)||base.price, annual:(saved.annual!==undefined && saved.annual!==null)?Number(saved.annual):base.annual, entryDate:saved.entryDate||'', exitDate:saved.exitDate||'', trades:Array.isArray(saved.trades)?saved.trades:[], name:base.name, frequency:base.frequency, months:base.months };
+  return { shares:Number(saved.shares)||0, totalCost:Number(saved.totalCost)||0, price:Number(saved.price)||base.price, annual:(saved.annual!==undefined && saved.annual!==null)?Number(saved.annual):base.annual, name:base.name, frequency:base.frequency, months:base.months };
 }
 function renderEtfCashflow() {
   var summary = document.getElementById('etf-cashflow-summary');
@@ -2093,9 +2075,6 @@ function renderEtfCashflow() {
   if (!summary || !tabs || !detail) return;
   var codes = Object.keys(ETF_DEFAULTS), totalShares=0, totalAnnual=0, totalValue=0, totalCost=0;
   codes.forEach(function(c){ var r=getEtfRecord(c); totalShares+=r.shares; totalAnnual+=r.shares*r.annual; totalValue+=r.shares*r.price; totalCost+=r.totalCost; });
-  var holdingsTable=document.getElementById('etf-holdings-table');
-  if(holdingsTable){var rows=codes.map(function(c){var x=getEtfRecord(c),mv=x.shares*x.price,pl=mv-x.totalCost,rp=x.totalCost>0?pl/x.totalCost*100:null,monthly=x.shares*x.annual/12;return '<tr><td><b>'+c+'</b><div style="font-size:10px;color:var(--muted)">'+x.name+'</div></td><td>'+x.shares.toLocaleString('en-US')+'</td><td>$'+Math.round(x.totalCost).toLocaleString('en-US')+'</td><td>$'+Math.round(monthly).toLocaleString('en-US')+'</td><td style="color:'+(pl>=0?'#34d399':'#f87171')+'">'+(x.totalCost?(pl>=0?'+$':'-$')+Math.round(Math.abs(pl)).toLocaleString('en-US'):'—')+'</td><td style="color:'+(pl>=0?'#34d399':'#f87171')+'">'+(rp===null?'—':(rp>=0?'+':'')+rp.toFixed(2)+'%')+'</td></tr>';}).join('');holdingsTable.innerHTML='<div class="tbl-wrap"><table style="min-width:620px"><thead><tr><th>ETF</th><th>持有股數</th><th>投入總成本</th><th>月平均股利</th><th>未實現損益</th><th>目前報酬率</th></tr></thead><tbody>'+rows+'</tbody></table></div>';}
-  renderEtfOverview();
   var totalYield = totalValue>0 ? totalAnnual/totalValue*100 : 0;
   var monthMap = {'0050':[1,7],'0056':[1,4,7,10],'00878':[2,5,8,11],'00919':[3,6,9,12]};
   var monthRows = [];
@@ -2122,39 +2101,19 @@ function renderEtfCashflow() {
     '<div class="form-grid">'+
     '<div class="fg"><label>持有股數（股）</label><input id="etf-shares" type="number" min="0" step="1" value="'+r.shares+'"></div>'+
     '<div class="fg"><label>持倉總成本（元，含手續費）</label><input id="etf-total-cost" type="number" min="0" step="1" value="'+r.totalCost+'" placeholder="輸入累計投入成本"></div>'+
-    '<div class="fg"><label>進場日期</label><input id="etf-entry-date" type="date" value="'+r.entryDate+'"></div>'+
-    '<div class="fg"><label>出場日期（未出場可留空）</label><input id="etf-exit-date" type="date" value="'+r.exitDate+'"></div>'+
     '<div class="fg"><label>參考股價（元）</label><input id="etf-price" type="number" min="0" step="0.01" value="'+r.price.toFixed(2)+'"></div>'+
     '<div class="fg"><label>每單位年度配息假設（元）</label><input id="etf-annual" type="number" min="0" step="0.001" value="'+r.annual.toFixed(3)+'"></div>'+
     '<div class="fg"><label>配息頻率／月份</label><input value="'+r.frequency+'｜'+r.months+'" disabled></div></div>'+
     '<div style="display:flex;gap:8px;align-items:center;margin-top:12px"><button onclick="saveEtfHolding(\''+activeEtfCode+'\')" class="sbtn" style="background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.35);color:#34d399">💾 儲存 '+activeEtfCode+'</button><span id="etf-save-msg" class="form-msg"></span></div>'+
     '<div style="font-size:10.5px;color:var(--muted);margin-top:8px">計算方式：平均成本＝持倉總成本 ÷ 股數；未實現損益＝股數 × 參考股價 − 持倉總成本；報酬率＝未實現損益 ÷ 持倉總成本。股利殖利率另列參考市價殖利率及成本殖利率。持倉總成本請輸入累計實際投入金額，建議含手續費。</div>';
-  renderEtfTradeLog();
 }
-function renderEtfOverview(){
-  var el=document.getElementById('etf-overview-summary'); if(!el)return;
-  var codes=Object.keys(ETF_DEFAULTS),cost=0,value=0,annual=0;
-  var rows=codes.map(function(c){var r=getEtfRecord(c),v=r.shares*r.price,p=v-r.totalCost,pct=r.totalCost?p/r.totalCost*100:null;cost+=r.totalCost;value+=v;annual+=r.shares*r.annual;return '<tr><td><b>'+c+'</b></td><td>'+r.shares.toLocaleString('en-US')+'</td><td>$'+Math.round(r.totalCost).toLocaleString('en-US')+'</td><td>$'+Math.round(r.shares*r.annual/12).toLocaleString('en-US')+'</td><td style="color:'+(p>=0?'#34d399':'#f87171')+'">'+(r.totalCost?(p>=0?'+$':'-$')+Math.round(Math.abs(p)).toLocaleString('en-US'):'—')+'</td><td>'+(pct===null?'—':(pct>=0?'+':'')+pct.toFixed(2)+'%')+'</td></tr>';}).join('');
-  var pl=value-cost,ret=cost?pl/cost*100:null;
-  el.innerHTML='<div class="metrics" style="margin-bottom:10px">'+[['ETF投入成本','$'+Math.round(cost).toLocaleString('en-US')],['ETF目前市值','$'+Math.round(value).toLocaleString('en-US')],['預估月平均股利','$'+Math.round(annual/12).toLocaleString('en-US')],['ETF合計報酬率',ret===null?'—':(ret>=0?'+':'')+ret.toFixed(2)+'%']].map(function(a){return '<div class="mc"><div class="mc-l">'+a[0]+'</div><div class="mc-v">'+a[1]+'</div></div>';}).join('')+'</div><div class="tbl-wrap"><table style="min-width:600px"><thead><tr><th>ETF</th><th>股數</th><th>投入成本</th><th>月平均股利</th><th>未實現損益</th><th>報酬率</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
-}
-window.addEtfTrade = async function(){
-  if(!canEdit){alert('目前為唯讀模式，請使用 ?edit=pudding2026 編輯');return;} if(_isOfflineMode){alert('目前離線，請恢復連線後再新增');return;}
-  var code=document.getElementById('etf-trade-code').value,type=document.getElementById('etf-trade-type').value,date=document.getElementById('etf-trade-date').value,shares=Number(document.getElementById('etf-trade-shares').value),price=Number(document.getElementById('etf-trade-price').value),amount=Number(document.getElementById('etf-trade-amount').value);
-  if(!date||!Number.isInteger(shares)||shares<=0||!Number.isFinite(price)||price<=0||!Number.isFinite(amount)||amount<=0){alert('請輸入交易日期、正確股數、成交單價及交易總額');return;}
-  DATA.ETF=DATA.ETF||{};var rec=DATA.ETF[code]||{};rec.trades=Array.isArray(rec.trades)?rec.trades:[];rec.trades.push({id:Date.now(),type:type,date:date,shares:shares,price:price,amount:amount});rec.trades.sort(function(a,b){return String(a.date).localeCompare(String(b.date));});DATA.ETF[code]=rec;
-  await saveData();renderEtfCashflow();var msg=document.getElementById('etf-trade-msg');if(msg)msg.textContent='交易紀錄已儲存';
-  ['etf-trade-shares','etf-trade-price','etf-trade-amount'].forEach(function(id){document.getElementById(id).value='';});
-};
-window.deleteEtfTrade = async function(code,id){if(!canEdit||_isOfflineMode)return;if(!confirm('確定刪除此筆交易紀錄？'))return;var rec=(DATA.ETF&&DATA.ETF[code])||{};rec.trades=(rec.trades||[]).filter(function(t){return String(t.id)!==String(id);});DATA.ETF[code]=rec;await saveData();renderEtfCashflow();};
-function renderEtfTradeLog(){var el=document.getElementById('etf-trade-log');if(!el)return;var all=[];Object.keys(ETF_DEFAULTS).forEach(function(c){var r=getEtfRecord(c);r.trades.forEach(function(t){all.push(Object.assign({code:c},t));});});all.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});if(!all.length){el.innerHTML='<div style="font-size:11px;color:var(--muted)">目前尚無批次交易紀錄。</div>';return;}el.innerHTML='<div class="tbl-wrap"><table style="min-width:650px"><thead><tr><th>日期</th><th>ETF</th><th>類型</th><th>股數</th><th>成交單價</th><th>交易總額</th><th>操作</th></tr></thead><tbody>'+all.map(function(t){return '<tr><td>'+t.date+'</td><td>'+t.code+'</td><td>'+(t.type==='BUY'?'買進':'賣出')+'</td><td>'+Number(t.shares).toLocaleString('en-US')+'</td><td>$'+Number(t.price).toFixed(2)+'</td><td>$'+Math.round(t.amount).toLocaleString('en-US')+'</td><td><button onclick="deleteEtfTrade(\''+t.code+'\',\''+t.id+'\')" class="sbtn">刪除</button></td></tr>';}).join('')+'</tbody></table></div>';}
 window.selectEtf = function(code){ if(!ETF_DEFAULTS[code])return; activeEtfCode=code; renderEtfCashflow(); };
 window.saveEtfHolding = async function(code){
   if(!canEdit){alert('目前為唯讀模式，請使用 ?edit=pudding2026 編輯');return;}
   if(_isOfflineMode){alert('目前離線，為避免舊資料覆蓋雲端，暫不儲存。請恢復連線後重整。');return;}
   var shares=Number(document.getElementById('etf-shares').value), totalCost=Number(document.getElementById('etf-total-cost').value), price=Number(document.getElementById('etf-price').value), annual=Number(document.getElementById('etf-annual').value);
   if(![shares,totalCost,price,annual].every(Number.isFinite)||shares<0||totalCost<0||price<=0||annual<0){alert('請確認股數、持倉總成本、股價及年配息皆為有效非負數，股價需大於0');return;}
-  var oldRecord=(DATA.ETF&&DATA.ETF[code])||{}; DATA.ETF=DATA.ETF||{}; DATA.ETF[code]={shares:shares,totalCost:totalCost,price:price,annual:annual,entryDate:document.getElementById('etf-entry-date').value||'',exitDate:document.getElementById('etf-exit-date').value||'',trades:Array.isArray(oldRecord.trades)?oldRecord.trades:[],updatedAt:fmtToday()};
+  DATA.ETF=DATA.ETF||{}; DATA.ETF[code]={shares:shares,totalCost:totalCost,price:price,annual:annual,updatedAt:fmtToday()};
   await saveData(); renderEtfCashflow();
   var msg=document.getElementById('etf-save-msg'); if(msg)msg.textContent='已儲存至雲端';
 };
@@ -4930,16 +4889,63 @@ window.updateQFFPreview = function() {
     + '估算未實現損益：<b style="color:'+(pnl===null?'var(--muted2)':pnl>=0?'var(--gain)':'var(--loss)')+'">'+(pnl===null?'待輸入進場價及目前價':(pnl>=0?'+':'-')+amMoney(Math.abs(pnl)))+'</b>'
     + '</div>';
 };
+window.setCashFlowMode = function() {
+  var kind = document.getElementById('am-flow-kind');
+  var isAllocation = kind && kind.value === 'allocation';
+  var sourceWrap = document.getElementById('am-flow-source-wrap');
+  var profitWrap = document.getElementById('am-flow-profit-wrap');
+  var destWrap = document.getElementById('am-flow-destination-wrap');
+  if (sourceWrap) sourceWrap.style.display = isAllocation ? 'none' : '';
+  if (profitWrap) profitWrap.style.display = isAllocation ? '' : 'none';
+  if (destWrap) destWrap.style.display = isAllocation ? '' : 'none';
+  if (isAllocation) refreshProfitSourceOptions();
+};
+function getProfitAllocationState() {
+  var flows = getAssetData().cashFlows || [];
+  var profits = flows.filter(function(x){ return x && x.kind === 'profit'; });
+  var allocations = flows.filter(function(x){ return x && x.kind === 'allocation'; });
+  var used = {};
+  allocations.forEach(function(x){ used[x.profitId] = (used[x.profitId] || 0) + (Number(x.amount) || 0); });
+  return {profits:profits, allocations:allocations, used:used};
+}
+function refreshProfitSourceOptions() {
+  var select = document.getElementById('am-flow-profit-ref');
+  if (!select) return;
+  var state = getProfitAllocationState();
+  var previous = select.value;
+  var options = state.profits.map(function(x){
+    var remaining = Math.max(0, (Number(x.amount)||0) - (state.used[x.id]||0));
+    if (remaining <= 0) return '';
+    return '<option value="'+amEscape(x.id)+'">'+amEscape(amDateDisplay(x.date))+'｜'+amEscape(x.source||'交易獲利')+'｜剩餘 '+amMoney(remaining)+'</option>';
+  }).filter(Boolean).join('');
+  select.innerHTML = options || '<option value="">尚無可分配獲利，請先新增獲利入帳</option>';
+  if (previous && Array.from(select.options).some(function(o){return o.value===previous;})) select.value = previous;
+}
 window.addCashFlow = async function() {
   if (!canEdit) { alert('唯讀模式，無法新增紀錄'); return; }
+  var kindEl = document.getElementById('am-flow-kind');
+  var kind = kindEl ? kindEl.value : 'profit';
   var date = document.getElementById('am-flow-date').value || amTodayISO();
-  var source = document.getElementById('am-flow-source').value;
-  var destination = document.getElementById('am-flow-destination').value;
   var amount = Number(document.getElementById('am-flow-amount').value);
   var note = document.getElementById('am-flow-note').value.trim();
   if (!isFinite(amount) || amount <= 0) { alert('請輸入大於 0 的金額'); return; }
   var am = getAssetData();
-  am.cashFlows.unshift({id:'cf_'+Date.now()+'_'+Math.floor(Math.random()*100000), date:date, source:source, destination:destination, amount:amount, note:note});
+  if (!Array.isArray(am.cashFlows)) am.cashFlows = [];
+  var id = 'cf_'+Date.now()+'_'+Math.floor(Math.random()*100000);
+  if (kind === 'profit') {
+    var source = document.getElementById('am-flow-source').value;
+    am.cashFlows.unshift({id:id, kind:'profit', date:date, source:source, amount:amount, note:note});
+  } else {
+    var profitId = document.getElementById('am-flow-profit-ref').value;
+    var destination = document.getElementById('am-flow-destination').value;
+    var state = getProfitAllocationState();
+    var profit = state.profits.find(function(x){return x.id===profitId;});
+    if (!profit) { alert('請先選擇一筆可分配的交易獲利。'); return; }
+    var used = state.used[profitId] || 0;
+    var remaining = Math.max(0, (Number(profit.amount)||0)-used);
+    if (amount > remaining + 0.0001) { alert('分配金額超過這筆獲利的剩餘額度：'+amMoney(remaining)); return; }
+    am.cashFlows.unshift({id:id, kind:'allocation', date:date, profitId:profitId, destination:destination, amount:amount, note:note});
+  }
   document.getElementById('am-flow-amount').value = '';
   document.getElementById('am-flow-note').value = '';
   renderAssetManagement();
@@ -4950,6 +4956,10 @@ window.deleteCashFlow = async function(id) {
   var am = getAssetData();
   var idx = am.cashFlows.findIndex(function(x){ return x.id === id; });
   if (idx < 0) return;
+  var target = am.cashFlows[idx];
+  if (target.kind === 'profit' && am.cashFlows.some(function(x){return x.kind === 'allocation' && x.profitId === id;})) {
+    alert('這筆獲利已經有分配紀錄。請先刪除相關分配紀錄，再刪除獲利來源，避免資金帳失去對應。'); return;
+  }
   if (!confirm('確定刪除這筆資金流向紀錄？')) return;
   am.cashFlows.splice(idx, 1);
   renderAssetManagement();
@@ -4959,27 +4969,35 @@ function renderAMCashFlows() {
   var summaryEl = document.getElementById('am-flow-summary');
   var listEl = document.getElementById('am-flow-list');
   if (!summaryEl || !listEl) return;
-  var flows = getAssetData().cashFlows;
-  var month = amTodayISO().slice(0,7);
-  var monthRows = flows.filter(function(x){ return String(x.date||'').slice(0,7) === month; });
-  var monthExpense = monthRows.filter(function(x){ return ['生活支出','貸款／負債','其他用途'].indexOf(x.destination) >= 0; }).reduce(function(a,x){ return a + (Number(x.amount)||0); },0);
-  var profitRows = flows.filter(function(x){ return x.source === '投資已實現獲利'; });
-  var profitTotal = profitRows.reduce(function(a,x){ return a + (Number(x.amount)||0); },0);
-  var byDest = {};
-  profitRows.forEach(function(x){ var k=x.destination||'未分類'; byDest[k]=(byDest[k]||0)+(Number(x.amount)||0); });
-  var destHtml = Object.keys(byDest).length ? Object.keys(byDest).map(function(k){ return '<div class="pool-log-row"><span>'+amEscape(k)+'</span><b class="am-amount">'+amMoney(byDest[k])+'</b></div>'; }).join('') : '<div style="font-size:11px;color:var(--muted);padding:4px 0">尚無「投資已實現獲利」去向紀錄。</div>';
+  var flows = getAssetData().cashFlows || [];
+  var state = getProfitAllocationState();
+  var profitTotal = state.profits.reduce(function(a,x){return a+(Number(x.amount)||0);},0);
+  var allocatedTotal = state.allocations.reduce(function(a,x){return a+(Number(x.amount)||0);},0);
+  var etfCodes = ['0050','0056','00878','00919'];
+  var etfTotals = {};
+  state.allocations.forEach(function(x){ if(etfCodes.indexOf(x.destination)>=0) etfTotals[x.destination]=(etfTotals[x.destination]||0)+(Number(x.amount)||0); });
+  var unallocated = state.profits.reduce(function(a,x){return a+Math.max(0,(Number(x.amount)||0)-(state.used[x.id]||0));},0);
+  var etfRows = etfCodes.filter(function(c){return etfTotals[c]>0;}).map(function(c){return '<div class="pool-log-row"><span>投入 '+c+'</span><b class="am-amount">'+amMoney(etfTotals[c])+'</b></div>';}).join('');
   summaryEl.innerHTML = '<div class="metrics" style="margin:4px 0 12px">'
-    + '<div class="mc"><div class="mc-l">累計已登記獲利分配</div><div class="mc-v pos">'+amMoney(profitTotal)+'</div></div>'
-    + '<div class="mc"><div class="mc-l">本月已登記實際支出</div><div class="mc-v neu">'+amMoney(monthExpense)+'</div></div>'
-    + '</div><div style="font-size:11px;color:var(--muted2);margin-bottom:6px">已登記投資獲利的去向</div>'+destHtml;
+    + '<div class="mc"><div class="mc-l">累積交易獲利已登記</div><div class="mc-v pos">'+amMoney(profitTotal)+'</div></div>'
+    + '<div class="mc"><div class="mc-l">已分配到各用途</div><div class="mc-v neu">'+amMoney(allocatedTotal)+'</div></div>'
+    + '<div class="mc"><div class="mc-l">尚未分配獲利</div><div class="mc-v '+(unallocated>0?'neg':'pos')+'">'+amMoney(unallocated)+'</div></div>'
+    + '<div class="mc"><div class="mc-l">已轉入長期 ETF</div><div class="mc-v pos">'+amMoney(etfCodes.reduce(function(a,c){return a+(etfTotals[c]||0);},0))+'</div></div>'
+    + '</div><div style="font-size:11px;color:var(--muted2);margin:4px 0 6px">長期 ETF 累積投入</div>'+(etfRows||'<div style="font-size:11px;color:var(--muted);padding:4px 0 10px">尚無 ETF 獲利分配紀錄。</div>');
   if (!flows.length) {
-    listEl.innerHTML = '<div style="text-align:center;padding:15px;color:var(--muted);font-size:12px">尚無資金流向紀錄</div>';
-    return;
+    listEl.innerHTML = '<div style="text-align:center;padding:15px;color:var(--muted);font-size:12px">尚無獲利來源或分配紀錄</div>';
+    refreshProfitSourceOptions(); return;
   }
-  var rows = flows.slice(0,10).map(function(x){
-    return '<tr><td>'+amEscape(amDateDisplay(x.date))+'</td><td>'+amEscape(x.source||'')+'</td><td>'+amEscape(x.destination||'')+'</td><td style="text-align:right" class="am-amount">'+amMoney(x.amount)+'</td><td>'+amEscape(x.note||'')+'</td><td>'+(canEdit?'<button class="op op-del" onclick="deleteCashFlow(\''+amEscape(x.id)+'\')">刪除</button>':'')+'</td></tr>';
+  var rows = flows.slice(0,20).map(function(x){
+    var type = x.kind === 'profit' ? '獲利入帳' : x.kind === 'allocation' ? '獲利分配' : '舊版資金流向';
+    var sourceLabel = x.kind === 'profit' ? (x.source||'交易獲利') : x.kind === 'allocation' ? ((state.profits.find(function(p){return p.id===x.profitId;})||{}).source||'來源已刪除') : (x.source||'');
+    var destinationLabel = x.kind === 'profit' ? '待分配' : x.kind === 'allocation' ? (etfCodes.indexOf(x.destination)>=0?'買進 '+x.destination:(x.destination||'')) : (x.destination||'');
+    var remainingLabel = '';
+    if (x.kind === 'profit') remainingLabel = '<div style="font-size:10px;color:var(--muted2)">未分配 '+amMoney(Math.max(0,(Number(x.amount)||0)-(state.used[x.id]||0)))+'</div>';
+    return '<tr><td>'+amEscape(amDateDisplay(x.date))+'</td><td><span class="am-flow-tag">'+type+'</span></td><td>'+amEscape(sourceLabel)+'</td><td>'+amEscape(destinationLabel)+'</td><td style="text-align:right" class="am-amount">'+amMoney(x.amount)+'</td><td>'+amEscape(x.note||'')+remainingLabel+'</td><td>'+(canEdit?'<button class="op op-del" onclick="deleteCashFlow(\''+amEscape(x.id)+'\')">刪除</button>':'')+'</td></tr>';
   }).join('');
-  listEl.innerHTML = '<div class="am-table-wrap"><table class="am-table" style="min-width:720px"><thead><tr><th>日期</th><th>來源</th><th>去向</th><th style="text-align:right">金額</th><th>備註</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="am-note">顯示最近 10 筆；完整資料保存在雲端。</div>';
+  listEl.innerHTML = '<div class="am-table-wrap"><table class="am-table" style="min-width:850px"><thead><tr><th>日期</th><th>類型</th><th>獲利來源</th><th>資金去向</th><th style="text-align:right">金額</th><th>備註／剩餘</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="am-note">最近 20 筆；完整資料仍保存在 Firebase。舊版 W5 資金流向會保留並標示為「舊版資金流向」，不會誤算進新制獲利分配。</div>';
+  refreshProfitSourceOptions();
 };
 window.recordAssetSnapshot = async function() {
   if (!canEdit) { alert('唯讀模式，無法新增快照'); return; }
@@ -5091,10 +5109,11 @@ function renderAssetManagement() {
     + '<div class="mc"><div class="mc-l">曝險／總資產</div><div class="mc-v neu">'+expRatioText+'</div></div>';
   window.updateQFFPreview();
 
-  var flowControls = ['am-flow-date','am-flow-source','am-flow-destination','am-flow-amount','am-flow-note'];
+  var flowControls = ['am-flow-kind','am-flow-date','am-flow-source','am-flow-profit-ref','am-flow-destination','am-flow-amount','am-flow-note'];
   flowControls.forEach(function(id){ var node=document.getElementById(id); if(node) node.disabled=!canEdit; });
   var flowDate = document.getElementById('am-flow-date');
   if (flowDate && !flowDate.value) flowDate.value = amTodayISO();
+  window.setCashFlowMode();
   renderAMCashFlows();
   renderAMSnapshots();
 }
